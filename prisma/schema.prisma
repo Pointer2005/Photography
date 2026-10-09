@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  password_hash String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Customer {
+  id           String    @id @default(cuid())
+  name         String
+  phone        String    @unique
+  consentGiven Boolean   @default(false)
+  consentAt    DateTime?
+  otpCode      String?
+  otpExpiresAt DateTime?
+  claims       Claim[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Campaign {
+  id             String    @id @default(cuid())
+  name           String
+  status         String    @default("PAUSED") // ACTIVE, PAUSED
+  selectionMode  String    @default("FIXED") // FIXED, ROTATION, WEIGHTED
+  fixedOfferId   String?
+  settings       String?
+  startsAt       DateTime?
+  endsAt         DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  offers         Offer[]
+  claims         Claim[]
+  overrides      OfferOverride[]
+}
+
+model Offer {
+  id               String    @id @default(cuid())
+  campaignId       String
+  campaign         Campaign  @relation(fields: [campaignId], references: [id])
+  name             String
+  description      String?
+  offerType        String    // DISCOUNT_PERCENT, DISCOUNT_AMOUNT, FREE_SERVICE
+  offerValue       String?
+  weight           Int       @default(1)
+  sequencePosition Int       @default(0)
+  isActive         Boolean   @default(true)
+  terms            String?
+  expiresAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  claims           Claim[]
+  overrides        OfferOverride[]
+}
+
+model OfferOverride {
+  id         String   @id @default(cuid())
+  phone      String
+  offerId    String
+  offer      Offer    @relation(fields: [offerId], references: [id])
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  isUsed     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([phone, campaignId])
+}
+
+model Claim {
+  id                  String    @id @default(cuid())
+  claimCode           String    @unique
+  customerId          String
+  customer            Customer  @relation(fields: [customerId], references: [id])
+  campaignId          String
+  campaign            Campaign  @relation(fields: [campaignId], references: [id])
+  offerId             String
+  offer               Offer     @relation(fields: [offerId], references: [id])
+  claimStatus         String    @default("PENDING") // PENDING, INITIATED
+  redemptionStatus    String    @default("UNREDEEMED") // UNREDEEMED, REDEEMED, EXPIRED
+  snapshot            String?     // store offer details at the time of winning
+  whatsappInitiatedAt DateTime?
+  redeemedAt          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([customerId, campaignId])
+}
