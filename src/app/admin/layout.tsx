@@ -12,7 +12,7 @@ export default async function AdminLayout({
   const session = await getSession();
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans selection:bg-pink-500/30 selection:text-pink-200">
+    <div className="min-h-screen flex flex-col bg-[#09090b] text-zinc-100 font-sans selection:bg-pink-500/30 selection:text-pink-200">
       <nav className="bg-white/5 backdrop-blur-xl border-b border-white/10 px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center sticky top-0 z-50 gap-4 md:gap-0">
         <div className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500 text-xl font-black tracking-tighter w-full text-center md:text-left md:w-auto">The Cinemoy Admin</div>
         <div className="flex flex-wrap justify-center gap-3 md:gap-4 items-center">

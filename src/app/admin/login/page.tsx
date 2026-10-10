@@ -15,9 +15,9 @@ export default function AdminLogin() {
   const [state, formAction, isPending] = useActionState(adminLoginAction, null);
 
   return (
-    <div className="relative flex-grow flex flex-col lg:flex-row bg-[#09090b] overflow-x-hidden">
+    <div className="relative flex-grow flex flex-col lg:flex-row bg-[#09090b] overflow-x-hidden min-h-[calc(100vh-80px)]">
       {/* ── Left Half: Photography Carousel ─────────────────────── */}
-      <div className="relative w-full lg:w-1/2 h-[45vh] lg:h-auto lg:min-h-full shrink-0 border-b lg:border-b-0 lg:border-r border-white/5">
+      <div className="relative w-full lg:w-1/2 h-[45vh] lg:h-auto lg:min-h-full flex-grow shrink-0 border-b lg:border-b-0 lg:border-r border-white/5 flex flex-col">
         <BackgroundCarousel />
         
         {/* Branding text overlay on the images */}
