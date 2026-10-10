@@ -48,7 +48,7 @@ export async function checkCustomerPhone(phone: string, consentGiven: boolean, c
   }
 }
 
-export async function registerCustomer(prevState: any, formData: FormData) {
+export async function registerCustomer(prevState: unknown, formData: FormData) {
   try {
     const rawData = {
       name: formData.get('name') as string,
@@ -62,7 +62,7 @@ export async function registerCustomer(prevState: any, formData: FormData) {
       return { success: false, errors: validated.error.flatten().fieldErrors };
     }
 
-    const { name, phone, consentGiven, campaignId } = validated.data;
+    const { name, phone, consentGiven } = validated.data;
 
     let customer = await prisma.customer.findUnique({ where: { phone } });
     if (!customer) {

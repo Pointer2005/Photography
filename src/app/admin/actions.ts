@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 
 const prisma = new PrismaClient();
 
-export async function adminLoginAction(prevState: any, formData: FormData) {
+export async function adminLoginAction(prevState: unknown, formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
@@ -32,7 +32,7 @@ export async function adminLoginAction(prevState: any, formData: FormData) {
   redirect('/admin');
 }
 
-export async function changePasswordAction(prevState: any, formData: FormData) {
+export async function changePasswordAction(prevState: unknown, formData: FormData) {
   const currentPassword = formData.get('currentPassword') as string;
   const newPassword = formData.get('newPassword') as string;
   const confirmPassword = formData.get('confirmPassword') as string;

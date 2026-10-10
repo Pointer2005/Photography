@@ -16,13 +16,13 @@ const SpinWheel = dynamic(() => import('./SpinWheel'), { ssr: false });
 type Campaign = {
   id: string;
   name: string;
-  offers: any[];
+  offers: { id: string; name: string; imageUrl?: string | null; [key: string]: unknown }[];
 };
 
 export default function MainFlow({ campaign }: { campaign: Campaign }) {
   const [stage, setStage] = useState<'login' | 'register' | 'wheel' | 'result'>('login');
   const [customerId, setCustomerId] = useState<string | null>(null);
-  const [claim, setClaim] = useState<any | null>(null);
+  const [claim, setClaim] = useState<{ claimCode: string; offerId: string; offer?: { name: string; description: string | null; imageUrl?: string | null }; [key: string]: unknown } | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
 
   const [name, setName] = useState('');
@@ -96,7 +96,7 @@ export default function MainFlow({ campaign }: { campaign: Campaign }) {
       return;
     }
 
-    setClaim(result.claim);
+    setClaim(result.claim || null);
     // The SpinWheel component handles the delay/animation
   };
 
@@ -138,7 +138,7 @@ I have attached a screenshot of my winning offer. Please let me know how to rede
   const mappedOffers = campaign.offers.map((offer, index) => ({
     id: offer.id,
     name: offer.name,
-    imageUrl: offer.imageUrl,
+    imageUrl: offer.imageUrl || undefined,
     color: wheelSlices[index % wheelSlices.length].bg,
     textColor: wheelSlices[index % wheelSlices.length].text,
   }));
@@ -361,8 +361,9 @@ I have attached a screenshot of my winning offer. Please let me know how to rede
             {/* Offer Background Image */}
             {claim.offer?.imageUrl && (
               <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
-                  src={claim.offer.imageUrl} 
+                  src={claim.offer.imageUrl as string} 
                   alt="Offer Background"
                   className="absolute inset-0 w-full h-full object-cover z-0 opacity-50 pointer-events-none"
                 />

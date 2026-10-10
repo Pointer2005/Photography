@@ -39,7 +39,7 @@ export default async function AdminDashboard(props: {
     orderBy: { name: 'asc' }
   });
 
-  const whereClause: any = {};
+  const whereClause: import('@prisma/client').Prisma.CustomerWhereInput = {};
   if (query) {
     whereClause.OR = [
       { name: { contains: query } },

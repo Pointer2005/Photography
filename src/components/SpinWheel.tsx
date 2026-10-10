@@ -28,10 +28,10 @@ export default function SpinWheel({ offers, winningOfferId, onSpinStart, onSpinC
       option: o.name,
       style: { backgroundColor: o.color, textColor: o.textColor || '#0C0B09' }
     };
-    
+
     // We intentionally do not attach the image to baseData here
     // so the wheel always renders solid background colors with text.
-    
+
     return baseData;
   });
 
@@ -70,14 +70,14 @@ export default function SpinWheel({ offers, winningOfferId, onSpinStart, onSpinC
           const values = matrix.split('(')[1].split(')')[0].split(',');
           const a = parseFloat(values[0]);
           const b = parseFloat(values[1]);
-          
+
           // Calculate current angle in degrees (0 to 360)
           let angle = Math.atan2(b, a) * (180 / Math.PI);
           if (angle < 0) angle += 360;
 
           if (lastAngle !== null) {
             let diff = angle - lastAngle;
-            
+
             // Handle wrap around
             if (diff > 180) diff -= 360;
             else if (diff < -180) diff += 360;
