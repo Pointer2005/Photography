@@ -27,7 +27,7 @@ export default async function Home() {
 
       {/* ── Content ───────────────────────────────── */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-16 md:py-24">
-        
+
         {/* ── Header ──────────────────────────────── */}
         <header className="mb-12 md:mb-16 text-center max-w-2xl mx-auto">
           {/* Logo mark */}

@@ -22,13 +22,13 @@ export async function adminLoginAction(prevState: unknown, formData: FormData) {
   }
 
   const isValid = await bcrypt.compare(password, admin.password_hash);
-  
+
   if (!isValid) {
     return { error: 'Invalid credentials' };
   }
 
   await login(admin.id);
-  
+
   redirect('/admin');
 }
 

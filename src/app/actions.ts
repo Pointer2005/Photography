@@ -18,28 +18,28 @@ export async function checkCustomerPhone(phone: string, consentGiven: boolean, c
   if (!/^\+?[1-9]\d{1,14}$/.test(phone)) {
     return { success: false, message: "Invalid phone number format" };
   }
-  
+
   if (!consentGiven) {
     return { success: false, message: "You must consent to continue" };
   }
 
   const customer = await prisma.customer.findUnique({ where: { phone } });
-  
+
   if (customer) {
     await prisma.customer.update({
       where: { id: customer.id },
       data: { consentGiven: true, consentAt: new Date() }
     });
-    
+
     const claim = await prisma.claim.findUnique({
       where: { customerId_campaignId: { customerId: customer.id, campaignId } },
       include: { offer: true }
     });
-    
-    return { 
-      success: true, 
-      isNewUser: false, 
-      customerId: customer.id, 
+
+    return {
+      success: true,
+      isNewUser: false,
+      customerId: customer.id,
       name: customer.name,
       claim: claim || null
     };
@@ -108,9 +108,9 @@ export async function executeSpin(customerId: string, campaignId: string) {
 
   // Determine winning offer
   let winningOffer;
-  
+
   const customer = await prisma.customer.findUnique({ where: { id: customerId } });
-  
+
   // 1. Check for specific mobile number overrides
   if (customer) {
     const override = await prisma.offerOverride.findFirst({
@@ -120,7 +120,7 @@ export async function executeSpin(customerId: string, campaignId: string) {
 
     if (override && override.offer.isActive) {
       winningOffer = override.offer;
-      
+
       // Mark override as used
       await prisma.offerOverride.update({
         where: { id: override.id },
@@ -128,7 +128,7 @@ export async function executeSpin(customerId: string, campaignId: string) {
       });
     }
   }
-  
+
   // 2. Standard selection if no override exists
   if (!winningOffer) {
     if (campaign.selectionMode === 'FIXED' && campaign.fixedOfferId) {
