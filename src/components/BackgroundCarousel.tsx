@@ -40,7 +40,7 @@ export default function BackgroundCarousel() {
   ], []);
 
   return (
-    <div className="absolute inset-0 bg-[#09090b] -z-10 overflow-hidden">
+    <div className="absolute inset-0 bg-[#09090b] z-0 overflow-hidden">
       <Carousel
         plugins={plugins}
         opts={{
