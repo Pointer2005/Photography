@@ -19,7 +19,7 @@ type Campaign = {
   offers: { id: string; name: string; imageUrl?: string | null;[key: string]: unknown }[];
 };
 
-export default function MainFlow({ campaign }: { campaign: Campaign }) {
+export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campaign; whatsappNumber: string }) {
   const [stage, setStage] = useState<'login' | 'register' | 'wheel' | 'result'>('login');
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [claim, setClaim] = useState<{ claimCode: string; offerId: string; offer?: { name: string; description: string | null; imageUrl?: string | null };[key: string]: unknown } | null>(null);
@@ -108,8 +108,6 @@ export default function MainFlow({ campaign }: { campaign: Campaign }) {
   const handleClaimWhatsApp = () => {
     if (!claim) return;
 
-    // Configured from environment in production, but here's a placeholder
-    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919883135275";
     const text = `Hello! I would like to claim my photography offer.
 
 Name: ${name}

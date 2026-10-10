@@ -56,7 +56,7 @@ export default async function Home() {
         {/* ── Main Content Card ───────────────────── */}
         {campaign ? (
           <div className="animate-fade-up delay-400 w-full max-w-md md:max-w-[560px]">
-            <MainFlow campaign={campaign} />
+            <MainFlow campaign={campaign} whatsappNumber={process.env.WHATSAPP_NUMBER || "919883135275"} />
           </div>
         ) : (
           <Card className="animate-fade-up delay-400 bg-[#161412]/55 backdrop-blur-3xl border-[#C8A24E]/15 shadow-2xl relative max-w-md md:max-w-[560px] w-full text-center overflow-hidden">
