@@ -39,9 +39,9 @@ export default async function Home() {
 
           {/* Headline — editorial treatment: display face, tight leading */}
           <h1 className="animate-fade-up delay-100 text-3xl md:text-[42px] lg:text-[52px] font-serif text-[#F5F0E8] leading-[1.15] tracking-[0.03em] font-normal mb-6">
-            Every Moment{' '}
+            Artistry{' '}
             <br className="hidden md:block" />
-            <span className="text-[#C8A24E]">Deserves Art.</span>
+            <span className="text-[#C8A24E]">In Every Shot.</span>
           </h1>
 
           {/* Divider */}
@@ -86,7 +86,7 @@ export default async function Home() {
       {/* ── Footer ────────────────────────────────── */}
       <footer className="relative z-10 text-center py-8 border-t border-[#F5F0E8]/10">
         <p className="text-[10px] uppercase tracking-[0.2em] text-[#F5F0E8]/40 font-light">
-          © {new Date().getFullYear()} Aetheris Photography
+          © {new Date().getFullYear()} ABC Photography
         </p>
       </footer>
     </main>

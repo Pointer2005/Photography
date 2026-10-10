@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { 
+import {
   Cinzel,
-  Lato, Geist } from "next/font/google";
+  Lato, Geist
+} from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin"], display: "swap" });
 const lato = Lato({ variable: "--font-lato", subsets: ["latin"], weight: ["300", "400", "700"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Aetheris Photography — Exclusive Offer",
+  title: "ABC Photography — Exclusive Offer",
   description: "Register, spin, and discover a special offer for your next photography session. Weddings, pre-weddings, birthdays and more.",
 };
 
