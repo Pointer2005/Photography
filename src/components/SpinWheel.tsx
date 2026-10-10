@@ -29,13 +29,8 @@ export default function SpinWheel({ offers, winningOfferId, onSpinStart, onSpinC
       style: { backgroundColor: o.color, textColor: o.textColor || '#0C0B09' }
     };
     
-    if (o.imageUrl) {
-      baseData.image = {
-        uri: o.imageUrl,
-        landscape: true,
-        sizeMultiplier: 1.2,
-      };
-    }
+    // We intentionally do not attach the image to baseData here
+    // so the wheel always renders solid background colors with text.
     
     return baseData;
   });
