@@ -2,17 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  allowedDevOrigins: [
-    "visit-heavily-jenny-utilize.trycloudflare.com",
-    "*.trycloudflare.com",
-  ],
-  experimental: {
-    serverActions: {
-      allowedOrigins: [
-        "visit-heavily-jenny-utilize.trycloudflare.com",
-        "*.trycloudflare.com",
-      ],
-    },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
   cacheComponents: true,
   partialPrefetching: true,

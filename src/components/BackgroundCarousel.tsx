@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import Fade from 'embla-carousel-fade';
+import Image from 'next/image';
 import {
   Carousel,
   CarouselContent,
@@ -49,18 +50,28 @@ export default function BackgroundCarousel() {
         className="w-full h-full"
       >
         <CarouselContent className="h-screen m-0 -ml-0">
-          {images.map((image) => (
+          {images.map((image, index) => (
             <CarouselItem key={image.desktop} className="p-0 pl-0 relative w-full h-full">
-              <picture>
-                <source media="(max-width: 767px)" srcSet={image.mobile} />
-                <source media="(min-width: 768px)" srcSet={image.desktop} />
-                <img
-                  src={image.desktop}
-                  alt={image.alt}
-                  aria-hidden="true"
-                  className="w-full h-full object-cover object-[center_20%] md:object-center"
-                />
-              </picture>
+              {/* Mobile Image */}
+              <Image
+                src={image.mobile}
+                alt={image.alt}
+                fill
+                priority={index === 0}
+                className="object-cover object-[center_20%] md:hidden"
+                sizes="100vw"
+                quality={75}
+              />
+              {/* Desktop Image */}
+              <Image
+                src={image.desktop}
+                alt={image.alt}
+                fill
+                priority={index === 0}
+                className="hidden md:block object-cover object-center"
+                sizes="100vw"
+                quality={75}
+              />
             </CarouselItem>
           ))}
         </CarouselContent>
