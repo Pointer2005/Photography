@@ -31,3 +31,43 @@ export async function adminLoginAction(prevState: any, formData: FormData) {
   
   redirect('/admin');
 }
+
+export async function changePasswordAction(prevState: any, formData: FormData) {
+  const currentPassword = formData.get('currentPassword') as string;
+  const newPassword = formData.get('newPassword') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return { error: 'All fields are required' };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: 'New passwords do not match' };
+  }
+
+  const { getSession } = await import('@/lib/auth');
+  const session = await getSession();
+  if (!session || !session.adminId) {
+    return { error: 'Unauthorized' };
+  }
+
+  const admin = await prisma.admin.findUnique({ where: { id: session.adminId } });
+  if (!admin) {
+    return { error: 'Admin not found' };
+  }
+
+  const isValid = await bcrypt.compare(currentPassword, admin.password_hash);
+  if (!isValid) {
+    return { error: 'Incorrect current password' };
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const password_hash = await bcrypt.hash(newPassword, salt);
+
+  await prisma.admin.update({
+    where: { id: admin.id },
+    data: { password_hash }
+  });
+
+  return { success: 'Password updated successfully' };
+}

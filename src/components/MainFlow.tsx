@@ -1,7 +1,14 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { registerCustomer, executeSpin, verifyOtp } from '@/app/actions';
+import { registerCustomer, executeSpin } from '@/app/actions';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const SpinWheel = dynamic(() => import('./SpinWheel'), { ssr: false });
@@ -13,7 +20,7 @@ type Campaign = {
 };
 
 export default function MainFlow({ campaign }: { campaign: Campaign }) {
-  const [stage, setStage] = useState<'login' | 'register' | 'otp' | 'wheel' | 'result'>('login');
+  const [stage, setStage] = useState<'login' | 'register' | 'wheel' | 'result'>('login');
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [claim, setClaim] = useState<any | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -21,8 +28,6 @@ export default function MainFlow({ campaign }: { campaign: Campaign }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [mockOtp, setMockOtp] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -35,7 +40,7 @@ export default function MainFlow({ campaign }: { campaign: Campaign }) {
     }
 
     const { checkCustomerPhone } = await import('@/app/actions');
-    const result = await checkCustomerPhone(phone, consent);
+    const result = await checkCustomerPhone(phone, consent, campaign.id);
 
     if (result.success) {
       if (result.isNewUser) {
@@ -43,8 +48,12 @@ export default function MainFlow({ campaign }: { campaign: Campaign }) {
       } else {
         setName(result.name || '');
         setCustomerId(result.customerId!);
-        setMockOtp(result.mockOtp!);
-        setStage('otp');
+        if (result.claim) {
+          setClaim(result.claim);
+          setStage('result');
+        } else {
+          setStage('wheel');
+        }
       }
     } else {
       setError(result.message || "An error occurred");
@@ -73,28 +82,7 @@ export default function MainFlow({ campaign }: { campaign: Campaign }) {
     }
 
     setCustomerId(result.customerId || null);
-    setMockOtp(result.mockOtp || '');
-    setStage('otp');
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!customerId) return;
-
-    const result = await verifyOtp(customerId, otp, campaign.id);
-    if (!result.success) {
-      setError(result.message || "Invalid OTP.");
-      return;
-    }
-
-    if (result.claim) {
-      // Already played
-      setClaim(result.claim);
-      setStage('result');
-    } else {
-      setStage('wheel');
-    }
+    setStage('wheel');
   };
 
   const handleSpinStart = async () => {
@@ -138,17 +126,22 @@ I have attached a screenshot of my winning offer. Please let me know how to rede
     window.open(url, '_blank');
   };
 
-  const wheelColors = ['#D4AF37', '#B59410', '#FDFBF7', '#E5C158', '#9B7B0A', '#F9E596'];
+  const wheelSlices = [
+    { bg: '#161412', text: '#C8A24E' },
+    { bg: '#C8A24E', text: '#0C0B09' },
+    { bg: '#1E1B17', text: '#F5F0E8' },
+    { bg: '#B0892F', text: '#0C0B09' },
+    { bg: '#252219', text: '#C8A24E' },
+    { bg: '#9E7D3A', text: '#0C0B09' },
+  ];
 
   const mappedOffers = campaign.offers.map((offer, index) => ({
     id: offer.id,
     name: offer.name,
-    color: wheelColors[index % wheelColors.length],
+    imageUrl: offer.imageUrl,
+    color: wheelSlices[index % wheelSlices.length].bg,
+    textColor: wheelSlices[index % wheelSlices.length].text,
   }));
-
-  // Figure out the winning offer if any, for wheel pointer mapping
-  // Note: For a real rotating wheel, we would calculate the exact rotate angle.
-  // We'll just pass the claim offer ID if available.
 
   const claimCardRef = useRef<HTMLDivElement>(null);
 
@@ -157,8 +150,8 @@ I have attached a screenshot of my winning offer. Please let me know how to rede
       try {
         const htmlToImage = await import('html-to-image');
         const dataUrl = await htmlToImage.toPng(claimCardRef.current, {
-          backgroundColor: '#1a1a1a', // charcoal roughly
-          pixelRatio: 2, // High resolution
+          backgroundColor: '#0C0B09',
+          pixelRatio: 2,
         });
         const link = document.createElement('a');
         link.href = dataUrl;
@@ -170,132 +163,165 @@ I have attached a screenshot of my winning offer. Please let me know how to rede
     }
   };
 
+  // Step indicator
+  const stageIndex = { login: 0, register: 0, wheel: 1, result: 2 };
+  const currentStep = stageIndex[stage as keyof typeof stageIndex];
+  const stepLabels = ['Details', 'Spin', 'Claim'];
+
   return (
-    <div className="w-full max-w-lg mx-auto bg-charcoal/80 p-8 rounded-2xl border border-gold-500/20 shadow-2xl backdrop-blur-sm">
-      {error && (
-        <div className="mb-6 p-4 bg-red-900/50 border border-red-500/50 text-red-200 rounded-lg text-sm">
-          {error}
+    <Card className="bg-[#161412]/55 backdrop-blur-3xl border-[#C8A24E]/15 shadow-2xl relative">
+    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C8A24E]/25 to-transparent z-0" />
+    <CardContent className="p-8 md:p-10 relative z-10 border-0">
+      
+      {/* ── Step indicator ──────────────────────Details─ */}
+      {currentStep < 3 && (
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {stepLabels.slice(0, 3).map((label, i) => (
+            <div key={label} className="flex items-center gap-2">
+              <div className="flex flex-col items-center gap-1.5">
+                <div
+                  className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                    i <= currentStep
+                      ? 'bg-[#C8A24E] shadow-[0_0_8px_rgba(200,162,78,0.4)]'
+                      : 'bg-[#F5F0E8]/25'
+                  }`}
+                />
+                <span className={`text-[9px] uppercase tracking-[0.15em] transition-colors duration-300 ${
+                  i <= currentStep ? 'text-[#C8A24E]' : 'text-[#F5F0E8]/35'
+                }`}>
+                  {label}
+                </span>
+              </div>
+              {i < 2 && (
+                <div className={`w-8 h-px mb-4 transition-all duration-500 ${
+                  i < currentStep ? 'bg-[#C8A24E]/50' : 'bg-[#F5F0E8]/15'
+                }`} />
+              )}
+            </div>
+          ))}
         </div>
       )}
 
+      {/* ── Error banner ───────────────────────── */}
+      {error && (
+        <Alert variant="destructive" className="mb-6 bg-red-950/30 border-red-500/20 text-red-200/80 animate-fade-up flex items-center gap-3">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* ══════════════════════════════════════════
+          STAGE: LOGIN
+         ══════════════════════════════════════════ */}
       {stage === 'login' && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <h2 className="text-3xl font-serif mb-6 text-gold-400 text-center">Enter Phone Number</h2>
+        <div className="animate-fade-up">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-[28px] font-serif text-[#F5F0E8] mb-2 tracking-wide">
+              Discover Your <span className="text-[#C8A24E]">Offer</span>
+            </h2>
+            <p className="text-[#F5F0E8]/65 text-sm font-light">
+              Enter your mobile number to begin
+            </p>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label htmlFor="phone" className="block text-sm text-cream/70 mb-2 font-medium">Mobile Number</label>
-              <input
-                id="phone"
+              <Label htmlFor="phone-input" className="block text-[10px] uppercase tracking-[0.15em] text-[#C8A24E]/80 mb-3 font-medium">
+                Mobile Number
+              </Label>
+              <Input
+                id="phone-input"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 bg-black/50 border border-gold-500/30 rounded-lg focus:outline-none focus:border-gold-500 text-cream transition-colors"
+                className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E] focus-visible:ring-[#C8A24E]/20 text-lg py-6 backdrop-blur-sm"
                 placeholder="+91 98765 43210"
                 required
               />
             </div>
 
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <div className="pt-1">
-                <input
-                  type="checkbox"
+            <label className="flex items-start gap-3 cursor-pointer group py-1" htmlFor="consent-check">
+              <div className="pt-1 flex-shrink-0">
+                <Checkbox
+                  id="consent-check"
                   checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)}
-                  className="w-4 h-4 rounded border-gold-500/50 bg-black/50 checked:bg-gold-500 checked:border-gold-500 focus:ring-gold-500 focus:ring-offset-charcoal transition-all"
+                  onCheckedChange={(checked) => setConsent(checked as boolean)}
+                  className="border-[#F5F0E8]/25 bg-[#F5F0E8]/5 data-[state=checked]:bg-[#C8A24E] data-[state=checked]:text-[#0C0B09] data-[state=checked]:border-[#C8A24E]"
                   required
                 />
               </div>
-              <span className="text-sm text-cream/60 group-hover:text-cream/80 transition-colors leading-relaxed">
-                I consent to being contacted regarding this offer and agree to the terms and conditions.
+              <span className="text-[13px] text-[#F5F0E8]/60 group-hover:text-[#F5F0E8]/80 transition-colors font-light leading-relaxed">
+                I consent to being contacted regarding this offer and agree to the terms.
               </span>
             </label>
 
-            <button
-              type="submit"
-              className="w-full py-4 bg-gold-500 hover:bg-gold-400 text-charcoal font-bold rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] mt-4"
-            >
+            <Button type="submit" className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] text-[13px] font-bold tracking-[0.12em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_8px_24px_rgba(200,162,78,0.25)] mt-2">
               Continue
-            </button>
+            </Button>
           </form>
         </div>
       )}
 
+      {/* ══════════════════════════════════════════
+          STAGE: REGISTER
+         ══════════════════════════════════════════ */}
       {stage === 'register' && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <h2 className="text-3xl font-serif mb-6 text-gold-400 text-center">What's Your Name?</h2>
+        <div className="animate-fade-up">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-[28px] font-serif text-[#F5F0E8] mb-2 tracking-wide">
+              Your <span className="text-[#C8A24E]">Name</span>
+            </h2>
+            <p className="text-[#F5F0E8]/40 text-sm font-light">
+              Tell us who you are
+            </p>
+          </div>
+
           <form onSubmit={handleRegister} className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm text-cream/70 mb-2 font-medium">Full Name</label>
-              <input
-                id="name"
+              <Label htmlFor="name-input" className="block text-[10px] uppercase tracking-[0.15em] text-[#C8A24E]/80 mb-3 font-medium">
+                Full Name
+              </Label>
+              <Input
+                id="name-input"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-black/50 border border-gold-500/30 rounded-lg focus:outline-none focus:border-gold-500 text-cream transition-colors"
-                placeholder="Jane Doe"
+                className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E] focus-visible:ring-[#C8A24E]/20 text-lg py-6 backdrop-blur-sm"
+                placeholder="E.g., Jane Doe"
                 required
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-4 bg-gold-500 hover:bg-gold-400 text-charcoal font-bold rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] mt-4"
-            >
-              Submit & Send OTP
-            </button>
-            <button
-              type="button"
-              onClick={() => setStage('login')}
-              className="w-full py-2 text-sm text-cream/50 hover:text-white transition-colors"
-            >
-              Go Back
-            </button>
-          </form>
-        </div>
-      )}
-
-      {stage === 'otp' && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <h2 className="text-3xl font-serif mb-6 text-gold-400 text-center">Verify Your Number</h2>
-          <p className="text-cream/70 text-center mb-6">
-            We've sent a code to <span className="text-white font-bold">{phone}</span>.<br />
-            <span className="text-gold-400 text-xs">(For this demo, your OTP is: {mockOtp})</span>
-          </p>
-          <form onSubmit={handleVerifyOtp} className="space-y-6">
-            <div>
-              <label htmlFor="otp" className="block text-sm text-cream/70 mb-2 font-medium">Enter OTP Code</label>
-              <input
-                id="otp"
-                type="text"
-                maxLength={4}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                className="w-full px-4 py-3 bg-black/50 border border-gold-500/30 rounded-lg focus:outline-none focus:border-gold-500 text-center tracking-widest text-xl text-cream transition-colors"
-                placeholder="••••"
-                required
-              />
+            <div className="space-y-3 mt-2">
+              <Button type="submit" className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] text-[13px] font-bold tracking-[0.12em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_8px_24px_rgba(200,162,78,0.25)]">
+                Submit & Play
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setStage('login')}
+                className="w-full text-[#F5F0E8]/90 hover:text-[#C8A24E] hover:bg-transparent text-[12px] uppercase tracking-[0.1em]"
+              >
+                ← Go Back
+              </Button>
             </div>
-
-            <button
-              type="submit"
-              className="w-full py-4 bg-gold-500 hover:bg-gold-400 text-charcoal font-bold rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] mt-4"
-            >
-              Verify & Play
-            </button>
-            <button
-              type="button"
-              onClick={() => setStage('register')}
-              className="w-full py-2 text-sm text-cream/50 hover:text-white transition-colors"
-            >
-              Change Phone Number
-            </button>
           </form>
         </div>
       )}
 
+      {/* ══════════════════════════════════════════
+          STAGE: WHEEL
+         ══════════════════════════════════════════ */}
       {stage === 'wheel' && (
-        <div className="animate-in zoom-in-95 duration-700 flex flex-col items-center py-4">
-          <h2 className="text-3xl font-serif mb-8 text-gold-400 text-center">Spin Your Luck</h2>
+        <div className="animate-scale-in flex flex-col items-center py-2">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-[28px] font-serif text-[#F5F0E8] mb-2 tracking-wide">
+              Spin Your <span className="text-[#C8A24E]">Luck</span>
+            </h2>
+            <p className="text-[#F5F0E8]/65 text-sm font-light">
+              Tap the center to reveal your offer
+            </p>
+          </div>
           <SpinWheel
             offers={mappedOffers}
             winningOfferId={claim?.offerId || null}
@@ -306,58 +332,99 @@ I have attached a screenshot of my winning offer. Please let me know how to rede
         </div>
       )}
 
+      {/* ══════════════════════════════════════════
+          STAGE: RESULT
+         ══════════════════════════════════════════ */}
       {stage === 'result' && claim && (
-        <div className="animate-in zoom-in-105 duration-1000 text-center py-6">
-          <div className="mb-4 inline-block px-4 py-1 rounded-full border border-gold-500/50 text-gold-400 text-xs font-bold tracking-widest uppercase">
-            Congratulations, {name.split(' ')[0]}!
+        <div className="animate-scale-in text-center py-4">
+          {/* Confetti badge */}
+          <div className="mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#C8A24E]/15 border border-[#C8A24E]/30">
+            <span className="text-base">✨</span>
+            <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#C8A24E]">
+              Congratulations{name ? `, ${name.split(' ')[0]}` : ''}!
+            </span>
           </div>
 
-          <h2 className="text-5xl font-serif mb-2 text-white">
+          <h2 className="text-3xl md:text-4xl font-serif mb-3 text-[#F5F0E8] leading-tight tracking-wide">
             {claim.offer?.name}
           </h2>
 
-          <p className="text-cream/80 text-lg mb-8 max-w-xs mx-auto">
+          <p className="text-[#F5F0E8]/70 text-sm md:text-base mb-8 max-w-sm mx-auto font-light leading-relaxed">
             {claim.offer?.description}
           </p>
 
+          {/* ── Claim Card ──────────────────────── */}
           <div
             ref={claimCardRef}
-            className="bg-black/40 border border-gold-500/40 p-6 rounded-xl mb-8 relative overflow-hidden group shadow-[0_0_30px_rgba(212,175,55,0.15)]"
+            className="bg-[#161412]/80 backdrop-blur-xl border border-[#C8A24E]/20 p-8 rounded-2xl mb-8 relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 w-1 h-full bg-gold-500"></div>
-            <div className="absolute -top-10 -right-10 w-24 h-24 bg-gold-500/10 rounded-full blur-xl"></div>
+            {/* Offer Background Image */}
+            {claim.offer?.imageUrl && (
+              <>
+                <img 
+                  src={claim.offer.imageUrl} 
+                  alt="Offer Background"
+                  className="absolute inset-0 w-full h-full object-cover z-0 opacity-50 pointer-events-none"
+                />
+                {/* Soft gradient overlay to keep text readable without hiding the image */}
+                <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#161412]/30 via-[#161412]/50 to-[#161412]/90 pointer-events-none" />
+              </>
+            )}
 
-            <p className="text-sm text-cream/60 mb-1">Your Claim ID</p>
-            <p className="text-3xl font-mono text-gold-400 tracking-wider font-bold mb-4 drop-shadow-md">
-              {claim.claimCode}
-            </p>
-            <div className="text-sm text-cream/70 font-medium mb-2">
-              Offer: {claim.offer?.name}
-            </div>
-            <div className="text-xs text-cream/40 mt-4 pt-4 border-t border-gold-500/20">
-              Valid for {campaign.name}
+            {/* Corner accents */}
+            <div className="absolute top-4 left-4 w-6 h-6 border-t border-l border-[#C8A24E]/35 rounded-tl-lg z-10"></div>
+            <div className="absolute top-4 right-4 w-6 h-6 border-t border-r border-[#C8A24E]/35 rounded-tr-lg z-10"></div>
+            <div className="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-[#C8A24E]/35 rounded-bl-lg z-10"></div>
+            <div className="absolute bottom-4 right-4 w-6 h-6 border-b border-r border-[#C8A24E]/35 rounded-br-lg z-10"></div>
+
+            {/* Subtle glow */}
+            <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#C8A24E]/15 rounded-full blur-3xl pointer-events-none z-10"></div>
+
+            <div className="relative z-10">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-[#C8A24E]/80 mb-2 font-medium">
+                Claim Code
+              </p>
+              <p className="text-3xl text-[#F5F0E8] tracking-[0.15em] mb-6 font-light">
+                {claim.claimCode}
+              </p>
+              <div className="inline-block px-4 py-2.5 bg-[#0C0B09]/60 rounded-lg border border-[#F5F0E8]/10 text-sm text-[#C8A24E] font-light w-full">
+                {claim.offer?.name}
+              </div>
+              <div className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.15em] text-[#F5F0E8]/45 mt-6 pt-4 border-t border-[#F5F0E8]/10">
+                <span>Issued to: <span className="text-[#F5F0E8]/80 font-medium">{name}</span></span>
+                <span>Valid for {campaign.name}</span>
+              </div>
             </div>
           </div>
 
+          {/* ── Action Buttons ──────────────────── */}
           <div className="space-y-3">
-            <button
+            <Button
               onClick={handleSaveCard}
-              className="w-full py-3 bg-white/10 hover:bg-white/20 text-cream font-bold rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 border border-white/10"
+              variant="outline"
+              className="w-full py-6 bg-[#F5F0E8]/8 hover:bg-[#F5F0E8]/12 text-[#F5F0E8]/80 font-light tracking-wide rounded-xl transition-all duration-300 flex items-center justify-center gap-3 border border-[#F5F0E8]/12 hover:border-[#F5F0E8]/25 text-sm h-auto"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
               Save Image Proof
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={handleClaimWhatsApp}
-              className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full py-6 bg-[#25D366] hover:bg-[#20bd5a] text-white font-medium tracking-wide rounded-xl transition-all duration-300 shadow-[0_8px_24px_rgba(37,211,102,0.15)] hover:shadow-[0_8px_24px_rgba(37,211,102,0.3)] flex items-center justify-center gap-3 hover:-translate-y-0.5 text-sm h-auto"
             >
-              <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+              </svg>
               Claim on WhatsApp
-            </button>
+            </Button>
           </div>
         </div>
       )}
-    </div>
+    </CardContent>
+    </Card>
   );
 }

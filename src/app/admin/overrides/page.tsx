@@ -1,11 +1,18 @@
 import { PrismaClient } from '@prisma/client';
 import { addOverride, deleteOverride } from './actions';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 const prisma = new PrismaClient();
 
+export const instant = false;
+
 export default async function OverridesAdmin() {
   const campaign = await prisma.campaign.findFirst({
-    where: { status: 'ACTIVE' },
     include: {
       offers: { where: { isActive: true } },
       overrides: {
@@ -18,96 +25,117 @@ export default async function OverridesAdmin() {
 
   if (!campaign) {
     return (
-      <div>
-        <h1 className="text-3xl font-serif text-gold-400 mb-6">Fixed Winners</h1>
-        <p className="text-cream/70">No active campaign found. Please create one on the Offers page.</p>
+      <div className="space-y-6">
+        <h1 className="text-3xl font-serif text-[#C8A24E]">Fixed Winners</h1>
+        <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md">
+          <CardContent className="p-8 text-center text-[#F5F0E8]/70">
+            No active campaign found. Please create one on the Offers page.
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-serif text-gold-400">Fixed Winners (Overrides)</h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-serif text-[#C8A24E] mb-2">Fixed Winners (Overrides)</h1>
+        <p className="text-[#F5F0E8]/60 max-w-3xl leading-relaxed">
+          Assign specific winning offers to predetermined mobile numbers. When a customer registers with a matching number, they will bypass the random wheel probabilities and be guaranteed to win their assigned offer.
+        </p>
       </div>
-      
-      <p className="text-cream/70 mb-8 max-w-3xl">
-        Assign specific winning offers to predetermined mobile numbers. When a customer registers with a matching number, they will bypass the random wheel probabilities and be guaranteed to win their assigned offer.
-      </p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1">
-          <h2 className="text-xl font-bold mb-4 text-white">Add New Override</h2>
-          <form action={addOverride.bind(null, campaign.id)} className="bg-black/40 border border-white/10 p-6 rounded-xl space-y-4">
-            <div>
-              <label className="block text-sm text-cream/70 mb-1">Mobile Number</label>
-              <input
-                type="tel"
-                name="phone"
-                placeholder="+91 98765 43210"
-                required
-                className="w-full px-4 py-2 bg-charcoal border border-white/10 rounded focus:border-gold-500 focus:outline-none text-white"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm text-cream/70 mb-1">Assign Offer</label>
-              <select
-                name="offerId"
-                required
-                className="w-full px-4 py-2 bg-charcoal border border-white/10 rounded focus:border-gold-500 focus:outline-none text-white"
-              >
-                {campaign.offers.map((offer) => (
-                  <option key={offer.id} value={offer.id}>
-                    {offer.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <button
-              type="submit"
-              className="w-full py-3 bg-gold-500 hover:bg-gold-400 text-charcoal font-bold rounded mt-4"
-            >
-              Save Override
-            </button>
-          </form>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div className="lg:col-span-5 xl:col-span-4">
+          <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md sticky top-24">
+            <CardHeader>
+              <CardTitle className="text-xl font-serif text-[#C8A24E]">Add New Override</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form action={addOverride.bind(null, campaign.id) as unknown as (payload: FormData) => void} className="space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-[#F5F0E8]/70">Mobile Number</Label>
+                  <Input
+                    type="tel"
+                    name="phone"
+                    placeholder="+91 98765 43210"
+                    required
+                    className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-[#F5F0E8]/70">Assign Offer</Label>
+                  <Select name="offerId" required>
+                    <SelectTrigger className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus:ring-[#C8A24E]/20">
+                      <SelectValue placeholder="Select an offer" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1E1B17] border-[#C8A24E]/20 text-[#F5F0E8]">
+                      {campaign.offers.map((offer) => (
+                        <SelectItem key={offer.id} value={offer.id}>
+                          {offer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button
+                  type="submit"
+                  className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] font-bold mt-2"
+                >
+                  Save Override
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
         
-        <div className="lg:col-span-2">
-          <h2 className="text-xl font-bold mb-4 text-white">Configured Overrides</h2>
-          
-          {campaign.overrides.length === 0 ? (
-            <div className="bg-black/20 border border-white/5 p-8 rounded-xl text-center text-cream/50">
-              No overrides configured yet.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {campaign.overrides.map((override) => (
-                <div key={override.id} className={`bg-black/40 border ${override.isUsed ? 'border-red-500/20' : 'border-gold-500/30'} p-4 rounded-xl flex flex-col sm:flex-row justify-between sm:items-center gap-4`}>
-                  <div>
-                    <h3 className="font-bold text-lg text-white font-mono tracking-wider">{override.phone}</h3>
-                    <p className="text-sm text-gold-400 font-medium">Assigned: {override.offer.name}</p>
-                    <p className="text-xs text-cream/50 mt-1">
-                      Status: {override.isUsed ? (
-                        <span className="text-red-400 font-bold">Already Claimed</span>
-                      ) : (
-                        <span className="text-green-400 font-bold">Waiting for Spin</span>
-                      )}
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <form action={deleteOverride.bind(null, override.id)}>
-                      <button type="submit" className="text-sm px-4 py-2 bg-red-900/40 text-red-400 hover:bg-red-900/60 rounded transition-colors">
-                        Delete
-                      </button>
-                    </form>
-                  </div>
+        <div className="lg:col-span-7 xl:col-span-8">
+          <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md">
+            <CardHeader>
+              <CardTitle className="text-xl font-serif text-[#C8A24E]">Configured Overrides</CardTitle>
+              <CardDescription className="text-[#F5F0E8]/50">List of all active and claimed phone number overrides.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {campaign.overrides.length === 0 ? (
+                <div className="p-8 border border-dashed border-[#F5F0E8]/10 rounded-xl text-center text-[#F5F0E8]/50">
+                  No overrides configured yet.
                 </div>
-              ))}
-            </div>
-          )}
+              ) : (
+                <div className="space-y-4">
+                  {campaign.overrides.map((override) => (
+                    <Card key={override.id} className={`bg-black/40 ${override.isUsed ? 'border-red-500/20' : 'border-[#C8A24E]/30'} flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-colors`}>
+                      <CardContent className="p-5 flex-1 flex flex-col sm:flex-row justify-between sm:items-center gap-4 w-full">
+                        <div>
+                          <div className="flex items-center gap-3 mb-1">
+                            <h3 className="font-bold text-lg text-white font-mono tracking-wider">{override.phone}</h3>
+                            {override.isUsed ? (
+                              <Badge variant="outline" className="bg-red-500/10 text-red-400 border-red-500/20 font-bold uppercase tracking-wider text-[10px]">Claimed</Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20 font-bold uppercase tracking-wider text-[10px]">Waiting</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-[#C8A24E] font-medium flex items-center gap-2">
+                            <span className="text-[#F5F0E8]/40">Assigned Offer:</span> {override.offer.name}
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <form action={deleteOverride.bind(null, override.id) as unknown as (payload: FormData) => void}>
+                            <Button type="submit" variant="destructive" size="sm" className="bg-red-950/40 text-red-400 hover:bg-red-900/60 hover:text-red-300 border border-red-900/50">
+                              Delete
+                            </Button>
+                          </form>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

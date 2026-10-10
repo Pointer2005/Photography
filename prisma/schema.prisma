@@ -21,8 +21,6 @@ model Customer {
   phone        String    @unique
   consentGiven Boolean   @default(false)
   consentAt    DateTime?
-  otpCode      String?
-  otpExpiresAt DateTime?
   claims       Claim[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -51,6 +49,7 @@ model Offer {
   campaign         Campaign  @relation(fields: [campaignId], references: [id])
   name             String
   description      String?
+  imageUrl         String?
   offerType        String    // DISCOUNT_PERCENT, DISCOUNT_AMOUNT, FREE_SERVICE
   offerValue       String?
   weight           Int       @default(1)
