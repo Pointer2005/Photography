@@ -36,7 +36,7 @@ export default async function AdminLayout({
           )}
         </div>
       </nav>
-      <main className={!session ? "max-w-7xl mx-auto h-[calc(100vh-100px)] flex flex-col justify-center px-4" : "p-6 md:p-10 max-w-7xl mx-auto"}>
+      <main className={!session ? "w-full flex-grow flex flex-col" : "p-6 md:p-10 max-w-7xl mx-auto w-full"}>
         {children}
       </main>
     </div>
