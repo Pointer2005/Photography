@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import {
-  Cormorant_Garamond,
-  Montserrat
-} from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-sans', weight: ['300', '400', '500', '600'] });
-const cormorant = Cormorant_Garamond({ variable: "--font-serif", subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap" });
+const outfit = Outfit({ 
+  subsets: ['latin'], 
+  variable: '--font-sans', 
+  weight: ['300', '400', '500', '600', '700', '800'] 
+});
 
 export const metadata: Metadata = {
   title: "The Cinemoy — Exclusive Photography Offer",
@@ -22,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased", cormorant.variable, montserrat.variable)}>
-      <body className="min-h-full flex flex-col font-sans bg-[#0C0B09] text-[#F5F0E8] overflow-x-hidden">
+    <html lang="en" className={cn("h-full", "antialiased", outfit.variable)}>
+      <body className="min-h-full flex flex-col font-sans bg-[#09090b] text-zinc-100 overflow-x-hidden selection:bg-pink-500/30 selection:text-pink-200">
         <div className="noise-overlay" aria-hidden="true"></div>
         {children}
         <Analytics />

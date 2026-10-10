@@ -40,7 +40,7 @@ export default function BackgroundCarousel() {
   ], []);
 
   return (
-    <div className="fixed inset-0 bg-[#0C0B09] -z-10">
+    <div className="absolute inset-0 bg-[#09090b] -z-10 overflow-hidden">
       <Carousel
         plugins={plugins}
         opts={{
@@ -49,7 +49,7 @@ export default function BackgroundCarousel() {
         }}
         className="w-full h-full"
       >
-        <CarouselContent className="h-screen m-0 -ml-0">
+        <CarouselContent className="h-full m-0 -ml-0">
           {images.map((image, index) => (
             <CarouselItem key={image.desktop} className="p-0 pl-0 relative w-full h-full">
               {/* Mobile Image */}
@@ -77,9 +77,9 @@ export default function BackgroundCarousel() {
         </CarouselContent>
       </Carousel>
 
-      {/* Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0C0B09]/60 via-[#0C0B09]/70 to-[#0C0B09]/90 z-10 pointer-events-none"></div>
-      <div className="absolute inset-0 bg-[#0C0B09]/20 mix-blend-multiply z-10 pointer-events-none"></div>
+      {/* Overlays - Lighter for vibrant theme, fading to black on the right (desktop) and bottom (mobile) */}
+      <div className="absolute inset-0 bg-black/20 z-10 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#09090b] z-10 pointer-events-none"></div>
     </div>
   );
 }
