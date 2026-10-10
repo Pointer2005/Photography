@@ -12,17 +12,17 @@ export default async function AdminLayout({
   const session = await getSession();
 
   return (
-    <div className="min-h-screen bg-[#0C0B09] text-[#F5F0E8] font-sans selection:bg-[#C8A24E]/25 selection:text-[#DFC07A]">
-      <nav className="bg-[#161412]/80 backdrop-blur-md border-b border-[#C8A24E]/20 px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center sticky top-0 z-50 gap-4 md:gap-0">
-        <div className="font-serif text-[#C8A24E] text-xl font-bold tracking-wide italic w-full text-center md:text-left md:w-auto">The Cinemoy Admin</div>
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans selection:bg-pink-500/30 selection:text-pink-200">
+      <nav className="bg-white/5 backdrop-blur-xl border-b border-white/10 px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center sticky top-0 z-50 gap-4 md:gap-0">
+        <div className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500 text-xl font-black tracking-tighter w-full text-center md:text-left md:w-auto">The Cinemoy Admin</div>
         <div className="flex flex-wrap justify-center gap-3 md:gap-4 items-center">
-          <a href="/" className="text-sm text-[#F5F0E8]/70 hover:text-[#C8A24E] transition-colors" target="_blank">View Site</a>
+          <a href="/" className="text-sm text-zinc-400 hover:text-pink-400 transition-colors font-medium" target="_blank">View Site</a>
           {session && (
             <>
-              <Link href="/admin" className="text-sm text-[#F5F0E8]/70 hover:text-[#C8A24E] transition-colors">Dashboard</Link>
-              <Link href="/admin/offers" className="text-sm text-[#F5F0E8]/70 hover:text-[#C8A24E] transition-colors">Offers</Link>
-              <Link href="/admin/overrides" className="text-sm text-[#F5F0E8]/70 hover:text-[#C8A24E] transition-colors">Overrides</Link>
-              <Link href="/admin/settings" className="text-sm text-[#F5F0E8]/70 hover:text-[#C8A24E] transition-colors">Settings</Link>
+              <Link href="/admin" className="text-sm text-zinc-400 hover:text-pink-400 transition-colors font-medium">Dashboard</Link>
+              <Link href="/admin/offers" className="text-sm text-zinc-400 hover:text-pink-400 transition-colors font-medium">Offers</Link>
+              <Link href="/admin/overrides" className="text-sm text-zinc-400 hover:text-pink-400 transition-colors font-medium">Overrides</Link>
+              <Link href="/admin/settings" className="text-sm text-zinc-400 hover:text-pink-400 transition-colors font-medium">Settings</Link>
               <form action={async () => {
                 'use server';
                 const { logout } = await import('@/lib/auth');

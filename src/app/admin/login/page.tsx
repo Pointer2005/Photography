@@ -13,10 +13,11 @@ export default function AdminLogin() {
   const [state, formAction, isPending] = useActionState(adminLoginAction, null);
 
   return (
-    <div className="w-full max-w-sm mx-auto text-[#F5F0E8]">
-      <Card className="w-full bg-[#161412]/55 backdrop-blur-md border-[#C8A24E]/20 shadow-2xl">
-        <CardHeader>
-          <CardTitle className="text-2xl font-serif text-[#C8A24E] text-center tracking-wide">Admin Login</CardTitle>
+    <div className="w-full max-w-sm mx-auto text-zinc-100">
+      <Card className="w-full bg-white/5 backdrop-blur-2xl border-white/10 shadow-2xl rounded-3xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent z-0" />
+        <CardHeader className="relative z-10 pt-8 pb-4">
+          <CardTitle className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500 text-center tracking-tight">Admin Login</CardTitle>
         </CardHeader>
         <CardContent>
           {state?.error && (
@@ -26,31 +27,31 @@ export default function AdminLogin() {
             </Alert>
           )}
           
-          <form action={formAction} className="space-y-4">
+          <form action={formAction} className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-[#C8A24E]/80 uppercase tracking-widest text-[10px]">Username</Label>
+              <Label className="text-pink-500 uppercase tracking-[0.2em] text-[10px] font-bold">Username</Label>
               <Input 
                 name="username" 
                 type="text" 
                 required 
-                className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E] focus-visible:ring-[#C8A24E]/20"
+                className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 py-5 rounded-xl transition-all duration-300 font-medium"
               />
             </div>
             
             <div className="space-y-2">
-              <Label className="text-[#C8A24E]/80 uppercase tracking-widest text-[10px]">Password</Label>
+              <Label className="text-pink-500 uppercase tracking-[0.2em] text-[10px] font-bold">Password</Label>
               <Input 
                 name="password" 
                 type="password" 
                 required 
-                className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E] focus-visible:ring-[#C8A24E]/20"
+                className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 py-5 rounded-xl transition-all duration-300 font-medium"
               />
             </div>
             
             <Button 
               type="submit" 
               disabled={isPending}
-              className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] font-bold tracking-[0.1em] uppercase transition-all duration-300 mt-6"
+              className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white font-extrabold tracking-[0.15em] uppercase transition-all duration-500 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] mt-6 py-6 rounded-xl border-0"
             >
               {isPending ? 'Logging in...' : 'Login'}
             </Button>

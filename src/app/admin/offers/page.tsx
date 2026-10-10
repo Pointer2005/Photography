@@ -39,17 +39,17 @@ export default async function OffersAdmin() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-serif text-[#C8A24E]">Campaign Management</h1>
+        <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Campaign Management</h1>
       </div>
 
-      <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md">
+      <Card className="bg-zinc-900/55 border-pink-500/20 backdrop-blur-md">
         <CardContent className="p-6 md:p-8 space-y-6">
-          <div className="flex flex-col md:flex-row justify-between md:items-end gap-8 pb-6 border-b border-[#F5F0E8]/10">
+          <div className="flex flex-col md:flex-row justify-between md:items-end gap-8 pb-6 border-b border-zinc-100/10">
             
             <div className="flex-1 w-full max-w-xl space-y-4">
               <div>
-                <CardTitle className="text-xl font-serif text-[#C8A24E]">Campaign Name</CardTitle>
-                <CardDescription className="text-[#F5F0E8]/50 mt-1">Update the public-facing name of your spinning wheel campaign.</CardDescription>
+                <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Campaign Name</CardTitle>
+                <CardDescription className="text-zinc-100/50 mt-1">Update the public-facing name of your spinning wheel campaign.</CardDescription>
               </div>
               
               <form action={updateCampaignName.bind(null, campaign.id) as unknown as (payload: FormData) => void} className="flex gap-4 items-end">
@@ -59,10 +59,10 @@ export default async function OffersAdmin() {
                     type="text" 
                     defaultValue={campaign.name}
                     required 
-                    className="w-full bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E] focus-visible:ring-[#C8A24E]/20" 
+                    className="w-full bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500 focus-visible:ring-pink-500/20" 
                   />
                 </div>
-                <Button type="submit" className="bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] font-bold px-6 whitespace-nowrap">
+                <Button type="submit" className="bg-pink-500 hover:bg-pink-400 text-black font-bold px-6 whitespace-nowrap">
                   Update
                 </Button>
               </form>
@@ -70,8 +70,8 @@ export default async function OffersAdmin() {
 
             <div className="space-y-4">
               <div>
-                <CardTitle className="text-xl font-serif text-[#C8A24E]">Status Controls</CardTitle>
-                <CardDescription className="text-[#F5F0E8]/50 mt-1">Manage the lifecycle of the campaign.</CardDescription>
+                <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Status Controls</CardTitle>
+                <CardDescription className="text-zinc-100/50 mt-1">Manage the lifecycle of the campaign.</CardDescription>
               </div>
               <div className="flex items-center gap-4">
                 <Badge variant="outline" className={`px-4 py-1.5 text-sm font-bold uppercase tracking-wider ${statusColors[campaign.status as keyof typeof statusColors]}`}>
@@ -106,33 +106,33 @@ export default async function OffersAdmin() {
         
         {/* ADD OFFER SIDE */}
         <div className="lg:col-span-5 xl:col-span-4">
-          <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md sticky top-24">
+          <Card className="bg-zinc-900/55 border-pink-500/20 backdrop-blur-md sticky top-24">
             <CardHeader>
-              <CardTitle className="text-xl font-serif text-[#C8A24E]">Add New Offer</CardTitle>
-              <CardDescription className="text-[#F5F0E8]/50">Create a new prize slice on the wheel.</CardDescription>
+              <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Add New Offer</CardTitle>
+              <CardDescription className="text-zinc-100/50">Create a new prize slice on the wheel.</CardDescription>
             </CardHeader>
             <CardContent>
               <form action={addOffer.bind(null, campaign.id) as unknown as (payload: FormData) => void} className="space-y-5">
                 <div className="space-y-2">
-                  <Label className="text-[#F5F0E8]/70">Offer Name</Label>
-                  <Input name="name" type="text" required placeholder="e.g. 50% Off Pre-wedding Shoot" className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]" />
+                  <Label className="text-zinc-100/70">Offer Name</Label>
+                  <Input name="name" type="text" required placeholder="e.g. 50% Off Pre-wedding Shoot" className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[#F5F0E8]/70">Description <span className="text-[#F5F0E8]/30 font-light text-xs">(Optional)</span></Label>
-                  <Input name="description" type="text" className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]" />
+                  <Label className="text-zinc-100/70">Description <span className="text-zinc-100/30 font-light text-xs">(Optional)</span></Label>
+                  <Input name="description" type="text" className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[#F5F0E8]/70">Image URL <span className="text-[#F5F0E8]/30 font-light text-xs">(Optional)</span></Label>
-                  <Input name="imageUrl" type="url" placeholder="https://..." className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]" />
+                  <Label className="text-zinc-100/70">Image URL <span className="text-zinc-100/30 font-light text-xs">(Optional)</span></Label>
+                  <Input name="imageUrl" type="url" placeholder="https://..." className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-[#F5F0E8]/70">Type</Label>
+                    <Label className="text-zinc-100/70">Type</Label>
                     <Select name="offerType" defaultValue="DISCOUNT_PERCENT">
-                      <SelectTrigger className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus:ring-[#C8A24E]/20">
+                      <SelectTrigger className="bg-white/5 border-zinc-100/15 text-zinc-100 focus:ring-pink-500/20">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#1E1B17] border-[#C8A24E]/20 text-[#F5F0E8]">
+                      <SelectContent className="bg-[#1E1B17] border-pink-500/20 text-zinc-100">
                         <SelectItem value="DISCOUNT_PERCENT">Discount (%)</SelectItem>
                         <SelectItem value="DISCOUNT_AMOUNT">Discount ($)</SelectItem>
                         <SelectItem value="FREE_SERVICE">Free Service</SelectItem>
@@ -141,11 +141,11 @@ export default async function OffersAdmin() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[#F5F0E8]/70">Probability Weight</Label>
-                    <Input name="weight" type="number" required min="1" defaultValue="1" className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]" />
+                    <Label className="text-zinc-100/70">Probability Weight</Label>
+                    <Input name="weight" type="number" required min="1" defaultValue="1" className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500" />
                   </div>
                 </div>
-                <Button type="submit" className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] font-bold mt-2">
+                <Button type="submit" className="w-full bg-pink-500 hover:bg-pink-400 text-black font-bold mt-2">
                   Add Offer
                 </Button>
               </form>
@@ -155,22 +155,22 @@ export default async function OffersAdmin() {
 
         {/* LIST OFFERS SIDE */}
         <div className="lg:col-span-7 xl:col-span-8">
-          <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md">
+          <Card className="bg-zinc-900/55 border-pink-500/20 backdrop-blur-md">
             <CardHeader>
-              <CardTitle className="text-xl font-serif text-[#C8A24E]">Current Offers</CardTitle>
-              <CardDescription className="text-[#F5F0E8]/50">Manage the offers and their probabilities. Total weight represents 100% chance.</CardDescription>
+              <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Current Offers</CardTitle>
+              <CardDescription className="text-zinc-100/50">Manage the offers and their probabilities. Total weight represents 100% chance.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {campaign.offers.length === 0 ? (
-                  <div className="text-[#F5F0E8]/50 p-8 border border-dashed border-[#F5F0E8]/10 rounded-xl text-center">
+                  <div className="text-zinc-100/50 p-8 border border-dashed border-zinc-100/10 rounded-xl text-center">
                     No offers added yet. Create one to populate the wheel.
                   </div>
                 ) : (
                   campaign.offers.map(offer => {
                     const prob = totalWeight > 0 && offer.isActive ? Math.round((offer.weight / totalWeight) * 100) : 0;
                     return (
-                      <Card key={offer.id} className="bg-black/40 border-[#F5F0E8]/10 hover:border-[#C8A24E]/30 transition-colors">
+                      <Card key={offer.id} className="bg-black/40 border-zinc-100/10 hover:border-pink-500/30 transition-colors">
                         <CardContent className="p-5">
                           <form className="flex flex-col gap-4">
                             <input type="hidden" name="offerId" value={offer.id} />
@@ -180,48 +180,48 @@ export default async function OffersAdmin() {
                                 <Input 
                                   name="name" 
                                   defaultValue={offer.name} 
-                                  className="w-full h-auto px-0 py-1 bg-transparent font-bold text-lg text-white border-0 border-b border-transparent focus-visible:ring-0 rounded-none focus-visible:border-[#C8A24E]" 
+                                  className="w-full h-auto px-0 py-1 bg-transparent font-bold text-lg text-white border-0 border-b border-transparent focus-visible:ring-0 rounded-none focus-visible:border-pink-500" 
                                 />
                                 <Input 
                                   name="description" 
                                   defaultValue={offer.description || ''} 
-                                  className="w-full h-auto px-0 py-1 bg-transparent text-sm text-[#F5F0E8]/70 border-0 border-b border-transparent focus-visible:ring-0 rounded-none focus-visible:border-[#C8A24E]" 
+                                  className="w-full h-auto px-0 py-1 bg-transparent text-sm text-zinc-100/70 border-0 border-b border-transparent focus-visible:ring-0 rounded-none focus-visible:border-pink-500" 
                                   placeholder="Offer Description"
                                 />
                                 <Input 
                                   name="imageUrl" 
                                   type="url"
                                   defaultValue={offer.imageUrl || ''} 
-                                  className="w-full h-auto px-0 py-1 bg-transparent text-sm text-[#F5F0E8]/70 border-0 border-b border-transparent focus-visible:ring-0 rounded-none focus-visible:border-[#C8A24E]" 
+                                  className="w-full h-auto px-0 py-1 bg-transparent text-sm text-zinc-100/70 border-0 border-b border-transparent focus-visible:ring-0 rounded-none focus-visible:border-pink-500" 
                                   placeholder="Image URL (Optional)"
                                 />
                               </div>
                               
-                              <div className="bg-[#1E1B17] px-4 py-3 rounded-lg border border-[#F5F0E8]/5 text-right min-w-[120px] flex-shrink-0">
-                                <div className="text-xs text-[#F5F0E8]/50 uppercase tracking-widest mb-1">Win Chance</div>
-                                <div className="text-2xl font-bold text-[#C8A24E]">{prob}%</div>
+                              <div className="bg-[#1E1B17] px-4 py-3 rounded-lg border border-zinc-100/5 text-right min-w-[120px] flex-shrink-0">
+                                <div className="text-xs text-zinc-100/50 uppercase tracking-widest mb-1">Win Chance</div>
+                                <div className="text-2xl font-bold text-pink-500">{prob}%</div>
                               </div>
                             </div>
                             
-                            <div className="flex flex-wrap items-center gap-4 mt-2 pt-4 border-t border-[#F5F0E8]/5">
+                            <div className="flex flex-wrap items-center gap-4 mt-2 pt-4 border-t border-zinc-100/5">
                               <div className="flex items-center gap-3">
-                                <Label className="text-xs text-[#F5F0E8]/70">Weight</Label>
+                                <Label className="text-xs text-zinc-100/70">Weight</Label>
                                 <Input 
                                   name="weight" 
                                   type="number" 
                                   defaultValue={offer.weight} 
-                                  className="w-20 h-8 px-2 text-sm bg-black/50 border-[#C8A24E]/30 text-[#F5F0E8] focus-visible:ring-[#C8A24E]/30" 
+                                  className="w-20 h-8 px-2 text-sm bg-black/50 border-pink-500/30 text-zinc-100 focus-visible:ring-pink-500/30" 
                                 />
                               </div>
                               
                               <div className="flex items-center gap-3">
-                                <Label className="text-xs text-[#F5F0E8]/70">Active</Label>
+                                <Label className="text-xs text-zinc-100/70">Active</Label>
                                 <div className="pt-0.5">
                                   <input 
                                     name="isActive" 
                                     type="checkbox" 
                                     defaultChecked={offer.isActive} 
-                                    className="w-4 h-4 rounded border-[#C8A24E]/50 bg-black/50 accent-[#C8A24E]" 
+                                    className="w-4 h-4 rounded border-pink-500/50 bg-black/50 accent-pink-500" 
                                   />
                                 </div>
                               </div>
@@ -229,7 +229,7 @@ export default async function OffersAdmin() {
                               <div className="flex-1 min-w-[20px]"></div>
                               
                               <div className="flex gap-2">
-                                <Button type="submit" size="sm" variant="secondary" formAction={updateOffer.bind(null, offer.id) as unknown as (payload: FormData) => void} className="bg-white/10 hover:bg-white/20 text-[#F5F0E8]">
+                                <Button type="submit" size="sm" variant="secondary" formAction={updateOffer.bind(null, offer.id) as unknown as (payload: FormData) => void} className="bg-white/10 hover:bg-white/20 text-zinc-100">
                                   Save
                                 </Button>
                                 <Button type="submit" size="sm" variant="destructive" formAction={deleteOffer.bind(null, offer.id) as unknown as (payload: FormData) => void} className="bg-red-950/40 text-red-400 hover:bg-red-900/60 hover:text-red-300 border border-red-900/50">

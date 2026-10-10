@@ -15,15 +15,15 @@ export default async function Home() {
   });
 
   return (
-    <main className="relative min-h-screen flex flex-col lg:flex-row bg-[#09090b] overflow-hidden">
+    <main className="relative min-h-screen flex flex-col lg:flex-row bg-[#09090b] overflow-x-hidden">
       
       {/* ── Left Half: Photography & Branding ─────────────────────── */}
-      <div className="relative w-full lg:w-1/2 h-[45vh] lg:h-screen shrink-0 border-b lg:border-b-0 lg:border-r border-white/5">
+      <div className="relative w-full lg:w-1/2 h-[50vh] lg:h-screen shrink-0 border-b lg:border-b-0 lg:border-r border-white/5">
         <BackgroundCarousel />
         
         {/* Branding text overlay on the images */}
-        <div className="absolute bottom-8 left-6 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 z-20">
-          <h1 className="animate-fade-up text-5xl md:text-6xl lg:text-[84px] font-black text-white tracking-tighter leading-[0.9] mb-4 drop-shadow-2xl">
+        <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 z-20">
+          <h1 className="animate-fade-up text-5xl md:text-6xl lg:text-[84px] font-black text-white tracking-tighter leading-[0.9] mb-3 md:mb-4 drop-shadow-2xl">
             Capture <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">Every Vibe.</span>
           </h1>
