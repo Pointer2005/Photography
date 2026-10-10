@@ -125,12 +125,12 @@ Please let me know how to redeem it.`;
   };
 
   const wheelSlices = [
-    { bg: '#161412', text: '#C8A24E' },
-    { bg: '#C8A24E', text: '#0C0B09' },
-    { bg: '#1E1B17', text: '#F5F0E8' },
-    { bg: '#B0892F', text: '#0C0B09' },
-    { bg: '#252219', text: '#C8A24E' },
-    { bg: '#9E7D3A', text: '#0C0B09' },
+    { bg: '#0A0A0A', text: '#D4AF37' },
+    { bg: '#D4AF37', text: '#0A0A0A' },
+    { bg: '#1A1A1A', text: '#FAFAFA' },
+    { bg: '#B0892F', text: '#0A0A0A' },
+    { bg: '#2A2A2A', text: '#D4AF37' },
+    { bg: '#8A7322', text: '#0A0A0A' },
   ];
 
   const mappedOffers = campaign.offers.map((offer, index) => ({
@@ -167,9 +167,9 @@ Please let me know how to redeem it.`;
   const stepLabels = ['Details', 'Spin', 'Claim'];
 
   return (
-    <Card className="bg-[#161412]/55 backdrop-blur-3xl border-[#C8A24E]/15 shadow-2xl relative">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C8A24E]/25 to-transparent z-0" />
-      <CardContent className="p-8 md:p-10 relative z-10 border-0">
+    <Card className="bg-black/40 backdrop-blur-3xl border border-white/10 shadow-2xl relative rounded-2xl">
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent z-0" />
+      <CardContent className="p-8 md:p-12 relative z-10 border-0">
 
         {/* ── Step indicator ──────────────────────Details─ */}
         {currentStep < 3 && (
@@ -211,17 +211,17 @@ Please let me know how to redeem it.`;
         {stage === 'login' && (
           <div className="animate-fade-up">
             <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-[28px] font-serif text-[#F5F0E8] mb-2 tracking-wide">
-                Discover Your <span className="text-[#C8A24E]">Offer</span>
+              <h2 className="text-2xl md:text-[32px] font-serif text-white mb-2 tracking-wide font-medium">
+                Discover Your <span className="text-[#D4AF37] italic font-light">Offer</span>
               </h2>
-              <p className="text-[#F5F0E8]/65 text-sm font-light">
+              <p className="text-white/60 text-sm font-light">
                 Enter your mobile number to begin
               </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
-                <Label htmlFor="phone-input" className="block text-[10px] uppercase tracking-[0.15em] text-[#C8A24E]/80 mb-3 font-medium">
+                <Label htmlFor="phone-input" className="block text-[10px] uppercase tracking-[0.2em] text-white/60 mb-3 font-medium">
                   Mobile Number
                 </Label>
                 <Input
@@ -229,7 +229,7 @@ Please let me know how to redeem it.`;
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E] focus-visible:ring-[#C8A24E]/20 text-lg py-6 backdrop-blur-sm"
+                  className="bg-white/5 border-white/10 text-white focus-visible:border-[#D4AF37] focus-visible:ring-[#D4AF37]/20 text-lg py-6 backdrop-blur-md rounded-xl transition-all duration-300"
                   placeholder="+91 98765 43210"
                   required
                 />
@@ -250,7 +250,7 @@ Please let me know how to redeem it.`;
                 </span>
               </label>
 
-              <Button type="submit" className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] text-[13px] font-bold tracking-[0.12em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_8px_24px_rgba(200,162,78,0.25)] mt-2">
+              <Button type="submit" className="w-full bg-[#D4AF37] hover:bg-[#F3E5AB] text-black text-[12px] font-semibold tracking-[0.15em] uppercase py-6 rounded-xl transition-all duration-500 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(212,175,55,0.3)] mt-4">
                 Continue
               </Button>
             </form>
@@ -263,17 +263,17 @@ Please let me know how to redeem it.`;
         {stage === 'register' && (
           <div className="animate-fade-up">
             <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-[28px] font-serif text-[#F5F0E8] mb-2 tracking-wide">
-                Your <span className="text-[#C8A24E]">Name</span>
+              <h2 className="text-2xl md:text-[32px] font-serif text-white mb-2 tracking-wide font-medium">
+                Your <span className="text-[#D4AF37] italic font-light">Name</span>
               </h2>
-              <p className="text-[#F5F0E8]/40 text-sm font-light">
+              <p className="text-white/40 text-sm font-light">
                 Tell us who you are
               </p>
             </div>
 
             <form onSubmit={handleRegister} className="space-y-6">
               <div>
-                <Label htmlFor="name-input" className="block text-[10px] uppercase tracking-[0.15em] text-[#C8A24E]/80 mb-3 font-medium">
+                <Label htmlFor="name-input" className="block text-[10px] uppercase tracking-[0.2em] text-white/60 mb-3 font-medium">
                   Full Name
                 </Label>
                 <Input
@@ -281,14 +281,14 @@ Please let me know how to redeem it.`;
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E] focus-visible:ring-[#C8A24E]/20 text-lg py-6 backdrop-blur-sm"
+                  className="bg-white/5 border-white/10 text-white focus-visible:border-[#D4AF37] focus-visible:ring-[#D4AF37]/20 text-lg py-6 backdrop-blur-md rounded-xl transition-all duration-300"
                   placeholder="E.g., Jane Doe"
                   required
                 />
               </div>
 
               <div className="space-y-3 mt-2">
-                <Button type="submit" className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] text-[13px] font-bold tracking-[0.12em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_8px_24px_rgba(200,162,78,0.25)]">
+                <Button type="submit" className="w-full bg-[#D4AF37] hover:bg-[#F3E5AB] text-black text-[12px] font-semibold tracking-[0.15em] uppercase py-6 rounded-xl transition-all duration-500 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(212,175,55,0.3)]">
                   Submit & Play
                 </Button>
                 <Button
@@ -310,10 +310,10 @@ Please let me know how to redeem it.`;
         {stage === 'wheel' && (
           <div className="animate-scale-in flex flex-col items-center py-2">
             <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-[28px] font-serif text-[#F5F0E8] mb-2 tracking-wide">
-                Spin Your <span className="text-[#C8A24E]">Luck</span>
+              <h2 className="text-2xl md:text-[32px] font-serif text-white mb-2 tracking-wide font-medium">
+                Spin Your <span className="text-[#D4AF37] italic font-light">Luck</span>
               </h2>
-              <p className="text-[#F5F0E8]/65 text-sm font-light">
+              <p className="text-white/60 text-sm font-light">
                 Tap the center to reveal your offer
               </p>
             </div>
