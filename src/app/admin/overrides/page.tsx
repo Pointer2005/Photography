@@ -59,7 +59,7 @@ export default async function OverridesAdmin() {
                   <Input
                     type="tel"
                     name="phone"
-                    placeholder="+91 98765 43210"
+                    placeholder="+91 9876543210"
                     required
                     className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]"
                   />

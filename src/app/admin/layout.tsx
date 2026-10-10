@@ -8,9 +8,9 @@ export default function AdminLayout({
 }) {
   return (
     <div className="min-h-screen bg-[#0C0B09] text-[#F5F0E8] font-sans selection:bg-[#C8A24E]/25 selection:text-[#DFC07A]">
-      <nav className="bg-[#161412]/80 backdrop-blur-md border-b border-[#C8A24E]/20 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div className="font-serif text-[#C8A24E] text-xl font-bold tracking-wide italic">Photography Admin</div>
-        <div className="flex gap-4 items-center">
+      <nav className="bg-[#161412]/80 backdrop-blur-md border-b border-[#C8A24E]/20 px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center sticky top-0 z-50 gap-4 md:gap-0">
+        <div className="font-serif text-[#C8A24E] text-xl font-bold tracking-wide italic w-full text-center md:text-left md:w-auto">Photography Admin</div>
+        <div className="flex flex-wrap justify-center gap-3 md:gap-4 items-center">
           <Link href="/admin" className="text-sm text-[#F5F0E8]/70 hover:text-[#C8A24E] transition-colors">Dashboard</Link>
           <Link href="/admin/offers" className="text-sm text-[#F5F0E8]/70 hover:text-[#C8A24E] transition-colors">Offers</Link>
           <Link href="/admin/overrides" className="text-sm text-[#F5F0E8]/70 hover:text-[#C8A24E] transition-colors">Overrides</Link>

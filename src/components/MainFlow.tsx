@@ -109,7 +109,7 @@ export default function MainFlow({ campaign }: { campaign: Campaign }) {
     if (!claim) return;
 
     // Configured from environment in production, but here's a placeholder
-    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "918710097728";
+    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919883135275";
     const text = `Hello! I would like to claim my photography offer.
 
 Name: ${name}
@@ -181,8 +181,8 @@ Please let me know how to redeem it.`;
                 <div className="flex flex-col items-center gap-1.5">
                   <div
                     className={`w-2 h-2 rounded-full transition-all duration-500 ${i <= currentStep
-                        ? 'bg-[#C8A24E] shadow-[0_0_8px_rgba(200,162,78,0.4)]'
-                        : 'bg-[#F5F0E8]/25'
+                      ? 'bg-[#C8A24E] shadow-[0_0_8px_rgba(200,162,78,0.4)]'
+                      : 'bg-[#F5F0E8]/25'
                       }`}
                   />
                   <span className={`text-[9px] uppercase tracking-[0.15em] transition-colors duration-300 ${i <= currentStep ? 'text-[#C8A24E]' : 'text-[#F5F0E8]/35'
