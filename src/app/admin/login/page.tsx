@@ -13,8 +13,8 @@ export default function AdminLogin() {
   const [state, formAction, isPending] = useActionState(adminLoginAction, null);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0C0B09] text-[#F5F0E8]">
-      <Card className="w-full max-w-sm bg-[#161412]/55 backdrop-blur-md border-[#C8A24E]/20 shadow-2xl">
+    <div className="w-full max-w-sm mx-auto text-[#F5F0E8]">
+      <Card className="w-full bg-[#161412]/55 backdrop-blur-md border-[#C8A24E]/20 shadow-2xl">
         <CardHeader>
           <CardTitle className="text-2xl font-serif text-[#C8A24E] text-center tracking-wide">Admin Login</CardTitle>
         </CardHeader>
