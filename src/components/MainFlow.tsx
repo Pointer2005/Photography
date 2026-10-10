@@ -109,7 +109,7 @@ export default function MainFlow({ campaign }: { campaign: Campaign }) {
     if (!claim) return;
 
     // Configured from environment in production, but here's a placeholder
-    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919876543210";
+    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "918710097728";
     const text = `Hello! I would like to claim my photography offer.
 
 Name: ${name}
@@ -118,7 +118,7 @@ Offer: ${claim.offer?.name}
 Claim ID: ${claim.claimCode}
 Campaign: ${campaign.name}
 
-I have attached a screenshot of my winning offer. Please let me know how to redeem it.`;
+Please let me know how to redeem it.`;
 
     const encodedText = encodeURIComponent(text);
     const url = `https://wa.me/${whatsappNumber}?text=${encodedText}`;

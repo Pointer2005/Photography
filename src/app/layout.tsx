@@ -14,7 +14,7 @@ const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin"], display: 
 const lato = Lato({ variable: "--font-lato", subsets: ["latin"], weight: ["300", "400", "700"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "ABC Photography — Exclusive Offer",
+  title: "the_cinemoy — Exclusive Offer",
   description: "Register, spin, and discover a special offer for your next photography session. Weddings, pre-weddings, birthdays and more.",
 };
 
