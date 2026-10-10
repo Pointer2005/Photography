@@ -4,6 +4,7 @@ import {
   Lato, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { Analytics } from "@vercel/analytics/next"
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-[#0C0B09] text-[#F5F0E8]">
         <div className="noise-overlay" aria-hidden="true"></div>
         {children}
+        <Analytics />
       </body>
     </html>
   );
