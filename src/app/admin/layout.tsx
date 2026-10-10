@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 
+export const instant = false;
+
 export default async function AdminLayout({
   children,
 }: {
