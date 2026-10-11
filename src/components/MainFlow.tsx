@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const SpinWheel = dynamic(() => import('./SpinWheel'), { ssr: false });
@@ -29,6 +29,7 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,24 +40,32 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
       return;
     }
 
-    const { checkCustomerPhone } = await import('@/app/actions');
-    const result = await checkCustomerPhone(phone, consent, campaign.id);
+    setIsSubmitting(true);
+    try {
+      const { checkCustomerPhone } = await import('@/app/actions');
+      const result = await checkCustomerPhone(phone, consent, campaign.id);
 
-    if (result.success) {
-      if (result.isNewUser) {
-        setStage('register');
-      } else {
-        setName(result.name || '');
-        setCustomerId(result.customerId!);
-        if (result.claim) {
-          setClaim(result.claim);
-          setStage('result');
+      if (result.success) {
+        if (result.isNewUser) {
+          setStage('register');
         } else {
-          setStage('wheel');
+          setName(result.name || '');
+          setCustomerId(result.customerId!);
+          if (result.claim) {
+            setClaim(result.claim);
+            setStage('result');
+          } else {
+            setStage('wheel');
+          }
         }
+      } else {
+        setError(result.message || "An error occurred");
       }
-    } else {
-      setError(result.message || "An error occurred");
+    } catch (err) {
+      console.error("Login verification error:", err);
+      setError("Connection error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -69,20 +78,28 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
       return;
     }
 
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('phone', phone);
-    formData.append('consentGiven', 'on'); // Already consented in login stage
-    formData.append('campaignId', campaign.id);
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('phone', phone);
+      formData.append('consentGiven', 'on'); // Already consented in login stage
+      formData.append('campaignId', campaign.id);
 
-    const result = await registerCustomer(null, formData);
-    if (!result.success) {
-      setError(result.message || "Registration failed. Check your inputs.");
-      return;
+      const result = await registerCustomer(null, formData);
+      if (!result.success) {
+        setError(result.message || "Registration failed. Check your inputs.");
+        return;
+      }
+
+      setCustomerId(result.customerId || null);
+      setStage('wheel');
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError("Registration error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setCustomerId(result.customerId || null);
-    setStage('wheel');
   };
 
   const handleSpinStart = async () => {
@@ -252,8 +269,22 @@ Please let me know how to redeem it.`;
                 </span>
               </label>
 
-              <Button type="submit" className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-[12px] font-extrabold tracking-[0.15em] uppercase py-6 rounded-xl transition-all duration-500 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] mt-4 border-0">
-                Continue
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-[12px] font-extrabold tracking-[0.15em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] active:translate-y-0 mt-4 border-0 disabled:opacity-80 disabled:cursor-wait"
+              >
+                {isSubmitting ? (
+                  <span className="inline-flex items-center justify-center gap-2.5">
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span className="tracking-widest animate-pulse">Verifying Mobile...</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center justify-center gap-2 group">
+                    <span>Continue</span>
+                    <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                )}
               </Button>
             </form>
           </div>
@@ -290,8 +321,22 @@ Please let me know how to redeem it.`;
               </div>
 
               <div className="space-y-3 mt-2">
-                <Button type="submit" className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-[12px] font-extrabold tracking-[0.15em] uppercase py-6 rounded-xl transition-all duration-500 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] border-0">
-                  Submit & Play
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-[12px] font-extrabold tracking-[0.15em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] active:translate-y-0 border-0 disabled:opacity-80 disabled:cursor-wait"
+                >
+                  {isSubmitting ? (
+                    <span className="inline-flex items-center justify-center gap-2.5">
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span className="tracking-widest animate-pulse">Preparing Wheel...</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center justify-center gap-2 group">
+                      <span>Submit & Play</span>
+                      <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  )}
                 </Button>
                 <Button
                   type="button"
