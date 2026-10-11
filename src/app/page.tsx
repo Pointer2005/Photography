@@ -1,3 +1,4 @@
+import { connection } from 'next/server';
 import prisma from '@/lib/prisma';
 import MainFlow from '@/components/MainFlow';
 import BackgroundCarousel from '@/components/BackgroundCarousel';
@@ -6,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export const instant = false;
 
 export default async function Home() {
+  await connection();
   const now = new Date();
   const campaign = await prisma.campaign.findFirst({
     where: { status: 'ACTIVE' },
