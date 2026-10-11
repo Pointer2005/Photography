@@ -71,3 +71,10 @@ export async function changePasswordAction(prevState: unknown, formData: FormDat
 
   return { success: 'Password updated successfully' };
 }
+
+export async function adminLogoutAction() {
+  const { logout } = await import('@/lib/auth');
+  await logout();
+  redirect('/admin/login');
+}
+
