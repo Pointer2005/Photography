@@ -6,9 +6,20 @@ import { Card, CardContent } from "@/components/ui/card";
 export const instant = false;
 
 export default async function Home() {
+  const now = new Date();
   const campaign = await prisma.campaign.findFirst({
     where: { status: 'ACTIVE' },
-    include: { offers: { where: { isActive: true } } },
+    include: {
+      offers: {
+        where: {
+          isActive: true,
+          OR: [
+            { expiresAt: null },
+            { expiresAt: { gt: now } }
+          ]
+        }
+      }
+    },
     orderBy: { createdAt: 'desc' }
   });
 

@@ -28,6 +28,8 @@ export async function addOffer(campaignId: string, formData: FormData) {
   const name = formData.get('name') as string;
   const offerType = formData.get('offerType') as string;
   const weight = parseInt(formData.get('weight') as string, 10);
+  const expiresAtRaw = formData.get('expiresAt') as string;
+  const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
 
   await prisma.offer.create({
     data: {
@@ -36,6 +38,7 @@ export async function addOffer(campaignId: string, formData: FormData) {
       offerType,
       weight,
       isActive: true,
+      expiresAt,
       description: formData.get('description') as string,
       imageUrl: formData.get('imageUrl') as string || null,
     }
@@ -50,6 +53,8 @@ export async function updateOffer(offerId: string, formData: FormData) {
   const offerType = formData.get('offerType') as string;
   const weight = parseInt(formData.get('weight') as string, 10);
   const isActive = formData.get('isActive') === 'on';
+  const expiresAtRaw = formData.get('expiresAt') as string;
+  const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
 
   await prisma.offer.update({
     where: { id: offerId },
@@ -58,6 +63,7 @@ export async function updateOffer(offerId: string, formData: FormData) {
       offerType,
       weight,
       isActive,
+      expiresAt,
       description: formData.get('description') as string,
       imageUrl: formData.get('imageUrl') as string || null,
     }

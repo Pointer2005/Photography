@@ -123,6 +123,17 @@ export default async function OffersAdmin() {
                   <Label className="text-zinc-100/70">Image URL <span className="text-zinc-100/30 font-light text-xs">(Optional)</span></Label>
                   <Input name="imageUrl" type="url" placeholder="https://..." className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500" />
                 </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-zinc-100/70">Expiration Date</Label>
+                    <span className="text-zinc-100/40 font-light text-xs">Leave blank for unlimited</span>
+                  </div>
+                  <Input 
+                    name="expiresAt" 
+                    type="datetime-local" 
+                    className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500" 
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-zinc-100/70">Type</Label>
@@ -223,6 +234,30 @@ export default async function OffersAdmin() {
                                   />
                                 </div>
                               </div>
+
+                              <div className="flex items-center gap-2">
+                                <Label className="text-xs text-zinc-100/70">Expires</Label>
+                                <Input 
+                                  name="expiresAt" 
+                                  type="datetime-local" 
+                                  defaultValue={offer.expiresAt ? new Date(offer.expiresAt).toISOString().slice(0, 16) : ''} 
+                                  className="w-44 h-8 px-2 text-xs bg-black/50 border-pink-500/30 text-zinc-100 focus-visible:ring-pink-500/30" 
+                                />
+                              </div>
+
+                              {offer.expiresAt && new Date(offer.expiresAt) < new Date() ? (
+                                <Badge variant="outline" className="bg-red-500/10 text-red-400 border-red-500/30 text-[10px]">
+                                  Expired
+                                </Badge>
+                              ) : offer.expiresAt ? (
+                                <Badge variant="outline" className="bg-amber-500/10 text-amber-300 border-amber-500/30 text-[10px]">
+                                  Active till {new Date(offer.expiresAt).toLocaleDateString()}
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-300 border-emerald-500/30 text-[10px]">
+                                  Unlimited
+                                </Badge>
+                              )}
                               
                               <div className="flex-1 min-w-[20px]"></div>
                               

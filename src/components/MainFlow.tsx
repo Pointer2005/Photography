@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { registerCustomer, executeSpin } from '@/app/actions';
+import { registerCustomer, executeSpin, markWhatsAppClaimInitiated } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -107,6 +107,8 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
 
   const handleClaimWhatsApp = () => {
     if (!claim) return;
+
+    markWhatsAppClaimInitiated(claim.claimCode);
 
     const text = `Hello! I would like to claim my photography offer.
 

@@ -84,10 +84,22 @@ export async function registerCustomer(prevState: unknown, formData: FormData) {
 
 
 export async function executeSpin(customerId: string, campaignId: string) {
+  const now = new Date();
+
   // Execute spin on the server
   const campaign = await prisma.campaign.findUnique({
     where: { id: campaignId },
-    include: { offers: { where: { isActive: true } } },
+    include: {
+      offers: {
+        where: {
+          isActive: true,
+          OR: [
+            { expiresAt: null },
+            { expiresAt: { gt: now } }
+          ]
+        }
+      }
+    },
   });
 
   if (!campaign || campaign.status !== 'ACTIVE') {
@@ -116,7 +128,7 @@ export async function executeSpin(customerId: string, campaignId: string) {
       include: { offer: true }
     });
 
-    if (override && override.offer.isActive) {
+    if (override && override.offer.isActive && (!override.offer.expiresAt || override.offer.expiresAt > now)) {
       winningOffer = override.offer;
 
       // Mark override as used
@@ -170,3 +182,20 @@ export async function executeSpin(customerId: string, campaignId: string) {
 
   return { success: true, claim };
 }
+
+export async function markWhatsAppClaimInitiated(claimCode: string) {
+  try {
+    await prisma.claim.update({
+      where: { claimCode },
+      data: {
+        whatsappInitiatedAt: new Date(),
+        claimStatus: 'INITIATED',
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to record WhatsApp initiation:', error);
+    return { success: false };
+  }
+}
+

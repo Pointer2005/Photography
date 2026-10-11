@@ -76,3 +76,107 @@ export async function adminLogoutAction() {
   redirect('/admin/login');
 }
 
+export async function markClaimRedeemed(claimId: string) {
+  try {
+    const claim = await prisma.claim.findUnique({
+      where: { id: claimId },
+      include: { offer: true }
+    });
+
+    if (!claim) {
+      return { success: false, error: 'Claim not found' };
+    }
+
+    if (claim.offer.expiresAt && new Date(claim.offer.expiresAt) < new Date()) {
+      return { success: false, error: 'Cannot redeem: This offer has already expired.' };
+    }
+
+    const updated = await prisma.claim.update({
+      where: { id: claimId },
+      data: {
+        redemptionStatus: 'REDEEMED',
+        redeemedAt: new Date(),
+      },
+    });
+
+    const { revalidatePath } = await import('next/cache');
+    revalidatePath('/admin');
+
+    return { success: true, claim: updated };
+  } catch (error) {
+    console.error('Error marking claim redeemed:', error);
+    return { success: false, error: 'Failed to update redemption status' };
+  }
+}
+
+export async function undoClaimRedemption(claimId: string) {
+  try {
+    const updated = await prisma.claim.update({
+      where: { id: claimId },
+      data: {
+        redemptionStatus: 'UNREDEEMED',
+        redeemedAt: null,
+      },
+    });
+
+    const { revalidatePath } = await import('next/cache');
+    revalidatePath('/admin');
+
+    return { success: true, claim: updated };
+  } catch (error) {
+    console.error('Error undoing redemption:', error);
+    return { success: false, error: 'Failed to revert redemption status' };
+  }
+}
+
+export async function verifyClaimLookup(rawQuery: string) {
+  const query = rawQuery.trim();
+  if (!query) {
+    return { success: false, error: 'Please enter a claim code or phone number.' };
+  }
+
+  try {
+    const claim = await prisma.claim.findFirst({
+      where: {
+        OR: [
+          { claimCode: { equals: query, mode: 'insensitive' } },
+          { customer: { phone: { contains: query } } },
+        ],
+      },
+      include: {
+        customer: true,
+        offer: true,
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!claim) {
+      return { success: false, error: `No claim found for "${query}".` };
+    }
+
+    const isExpired = !!(claim.offer.expiresAt && new Date(claim.offer.expiresAt) < new Date());
+
+    return {
+      success: true,
+      claim: {
+        id: claim.id,
+        claimCode: claim.claimCode,
+        customerName: claim.customer.name,
+        customerPhone: claim.customer.phone,
+        offerName: claim.offer.name,
+        offerDescription: claim.offer.description,
+        offerExpiresAt: claim.offer.expiresAt ? claim.offer.expiresAt.toISOString() : null,
+        isExpired,
+        redemptionStatus: claim.redemptionStatus,
+        redeemedAt: claim.redeemedAt ? claim.redeemedAt.toISOString() : null,
+        whatsappInitiatedAt: claim.whatsappInitiatedAt ? claim.whatsappInitiatedAt.toISOString() : null,
+        createdAt: claim.createdAt.toISOString(),
+      },
+    };
+  } catch (error) {
+    console.error('Error looking up claim:', error);
+    return { success: false, error: 'Lookup failed. Please try again.' };
+  }
+}
+
+
