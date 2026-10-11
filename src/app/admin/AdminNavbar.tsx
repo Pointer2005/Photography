@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Camera,
   LayoutDashboard,
@@ -10,6 +11,7 @@ import {
   Settings,
   ExternalLink,
   LogOut,
+  Loader2,
 } from 'lucide-react';
 import { adminLogoutAction } from './actions';
 
@@ -46,6 +48,14 @@ const navItems = [
 
 export default function AdminNavbar({ hasSession }: AdminNavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+
+  // Clear pending state whenever the active pathname changes
+  useEffect(() => {
+    setNavigatingTo(null);
+  }, [pathname]);
 
   const isItemActive = (href: string, exact: boolean) => {
     if (exact) {
@@ -54,13 +64,34 @@ export default function AdminNavbar({ hasSession }: AdminNavbarProps) {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (pathname === href) {
+      return;
+    }
+    // Set immediate loading state for the clicked item
+    setNavigatingTo(href);
+    startTransition(() => {
+      router.push(href);
+    });
+  };
+
+  const isAnyNavigating = isPending || navigatingTo !== null;
+
   return (
-    <nav className="sticky top-0 z-50 w-full bg-[#09090b]/80 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 py-3.5 transition-all">
+    <nav className="sticky top-0 z-50 w-full bg-[#09090b]/85 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 py-3.5 transition-all">
+      {/* Top Indeterminate Loading Bar during page transitions */}
+      {isAnyNavigating && (
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-black/40 overflow-hidden z-50 pointer-events-none">
+          <div className="h-full w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 animate-top-progress shadow-[0_0_12px_#ec4899]" />
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3.5 md:gap-4">
         {/* Brand Logo & Title */}
         <div className="flex items-center justify-between w-full md:w-auto">
           <Link
             href="/admin"
+            onClick={(e) => handleNavClick(e, '/admin')}
             className="group flex items-center gap-2.5 transition-opacity hover:opacity-95"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(236,72,153,0.35)] ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-200">
@@ -95,30 +126,40 @@ export default function AdminNavbar({ hasSession }: AdminNavbarProps) {
           <div className="flex items-center gap-1.5 p-1 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-inner shadow-black/40 overflow-x-auto max-w-full [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
               const active = isItemActive(item.href, item.exact);
+              const isTargetLoading = navigatingTo === item.href;
               const Icon = item.icon;
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={(e) => handleNavClick(e, item.href)}
                   aria-current={active ? 'page' : undefined}
                   className={`relative group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs md:text-sm transition-all duration-200 select-none ${
-                    active
+                    isTargetLoading
+                      ? 'bg-pink-500/15 text-pink-200 border border-pink-500/50 shadow-[0_0_15px_rgba(236,72,153,0.25)] font-semibold scale-[0.98]'
+                      : active
                       ? 'bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20 text-white border border-pink-500/40 shadow-[0_0_15px_rgba(236,72,153,0.2)] font-semibold'
                       : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] border border-transparent font-medium'
                   }`}
                 >
-                  <Icon
-                    className={`w-4 h-4 transition-colors ${
-                      active
-                        ? 'text-pink-400 drop-shadow-[0_0_6px_rgba(244,114,182,0.6)]'
-                        : 'text-zinc-500 group-hover:text-zinc-300'
-                    }`}
-                  />
+                  {/* Show spinner on the item being navigated to, otherwise regular icon */}
+                  {isTargetLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-pink-400 shrink-0" />
+                  ) : (
+                    <Icon
+                      className={`w-4 h-4 transition-colors shrink-0 ${
+                        active
+                          ? 'text-pink-400 drop-shadow-[0_0_6px_rgba(244,114,182,0.6)]'
+                          : 'text-zinc-500 group-hover:text-zinc-300'
+                      }`}
+                    />
+                  )}
+
                   <span>{item.name}</span>
 
                   {/* Active Indicator Pulse Dot */}
-                  {active && (
+                  {active && !isTargetLoading && (
                     <span className="relative flex h-1.5 w-1.5 ml-0.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-pink-500 shadow-[0_0_6px_#ec4899]"></span>

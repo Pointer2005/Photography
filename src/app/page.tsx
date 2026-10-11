@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import MainFlow from '@/components/MainFlow';
 import BackgroundCarousel from '@/components/BackgroundCarousel';
 import { Card, CardContent } from "@/components/ui/card";
-
-const prisma = new PrismaClient();
 
 export const instant = false;
 
