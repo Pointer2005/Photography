@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ interface ClaimLookupResult {
 }
 
 export default function QuickCodeChecker() {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<ClaimLookupResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +81,7 @@ export default function QuickCodeChecker() {
             : null
         );
         setSuccessMsg(`Successfully redeemed code "${result.claimCode}"!`);
+        router.refresh();
       } else {
         setError(res.error || 'Failed to redeem offer');
       }

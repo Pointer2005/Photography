@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, RotateCcw, Loader2, AlertCircle } from 'lucide-react';
@@ -21,6 +22,7 @@ export default function RedeemActionCell({
   isExpired,
   expiresAt,
 }: RedeemActionCellProps) {
+  const router = useRouter();
   const [status, setStatus] = useState(initialStatus);
   const [redeemedAt, setRedeemedAt] = useState<string | null>(initialRedeemedAt);
   const [isPending, startTransition] = useTransition();
@@ -39,6 +41,8 @@ export default function RedeemActionCell({
         setStatus('UNREDEEMED');
         setRedeemedAt(null);
         setError(res.error || 'Failed to redeem');
+      } else {
+        router.refresh();
       }
     });
   };
@@ -54,6 +58,8 @@ export default function RedeemActionCell({
       if (!res.success) {
         setStatus('REDEEMED');
         setError(res.error || 'Failed to undo');
+      } else {
+        router.refresh();
       }
     });
   };
