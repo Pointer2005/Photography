@@ -61,7 +61,7 @@ export default function BackgroundCarousel() {
                 loading={index === 0 ? "eager" : "lazy"}
                 className="object-cover object-[center_20%] md:hidden"
                 sizes="(max-width: 768px) 100vw, 50vw"
-                quality={70}
+                quality={75}
               />
               {/* Desktop Image */}
               <Image
@@ -72,7 +72,7 @@ export default function BackgroundCarousel() {
                 loading={index === 0 ? "eager" : "lazy"}
                 className="hidden md:block object-cover object-center"
                 sizes="(max-width: 1024px) 100vw, 50vw"
-                quality={70}
+                quality={75}
               />
             </CarouselItem>
           ))}

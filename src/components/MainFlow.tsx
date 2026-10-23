@@ -239,7 +239,7 @@ Please let me know how to redeem it.`;
   return (
     <Card className="bg-zinc-950/80 backdrop-blur-xl border-white/10 shadow-2xl relative rounded-[2rem] overflow-hidden transform-gpu">
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent z-0" />
-      <CardContent className="p-8 md:p-12 relative z-10 border-0">
+      <CardContent className="p-6 sm:p-8 md:p-10 relative z-10 border-0">
 
         {/* ── Step indicator ──────────────────────Details─ */}
         {currentStep < 3 && (
@@ -406,8 +406,8 @@ Please let me know how to redeem it.`;
           STAGE: WHEEL
          ══════════════════════════════════════════ */}
         {stage === 'wheel' && (
-          <div className="animate-scale-in flex flex-col items-center py-2">
-            <div className="text-center mb-8">
+          <div className="animate-scale-in flex flex-col items-center py-2 w-full">
+            <div className="text-center mb-6">
               <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight">
                 Spin Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Luck</span>
               </h2>
@@ -415,13 +415,15 @@ Please let me know how to redeem it.`;
                 Tap the center to reveal your offer
               </p>
             </div>
-            <SpinWheel
-              offers={mappedOffers}
-              winningOfferId={claim?.offerId || null}
-              onSpinStart={handleSpinStart}
-              onSpinComplete={handleSpinComplete}
-              isSpinning={isSpinning}
-            />
+            <div className="w-full flex items-center justify-center">
+              <SpinWheel
+                offers={mappedOffers}
+                winningOfferId={claim?.offerId || null}
+                onSpinStart={handleSpinStart}
+                onSpinComplete={handleSpinComplete}
+                isSpinning={isSpinning}
+              />
+            </div>
           </div>
         )}
 
