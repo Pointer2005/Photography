@@ -81,3 +81,17 @@ export async function deleteOffer(offerId: string) {
   revalidatePath('/admin/offers');
   revalidatePath('/');
 }
+
+export async function seedDefaultOffers(campaignId: string) {
+  const { DEFAULT_OFFERS_LIST } = await import('@/lib/defaultOffers');
+  await prisma.offer.createMany({
+    data: DEFAULT_OFFERS_LIST.map((offer) => ({
+      ...offer,
+      campaignId,
+      isActive: true,
+    })),
+  });
+
+  revalidatePath('/admin/offers');
+  revalidatePath('/');
+}

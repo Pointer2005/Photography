@@ -1,5 +1,13 @@
 import prisma from '@/lib/prisma';
-import { addOffer, updateOffer, deleteOffer, updateCampaignName, updateCampaignStatus } from './actions';
+import {
+  addOffer,
+  updateOffer,
+  deleteOffer,
+  updateCampaignName,
+  updateCampaignStatus,
+  seedDefaultOffers,
+} from './actions';
+import { DEFAULT_OFFERS_LIST } from '@/lib/defaultOffers';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,18 +19,42 @@ export const instant = false;
 
 export default async function OffersAdmin() {
   let campaign = await prisma.campaign.findFirst({
-    include: { offers: { orderBy: { createdAt: 'desc' } } },
+    where: { status: 'ACTIVE' },
+    include: { offers: { orderBy: { sequencePosition: 'asc' } } },
     orderBy: { createdAt: 'desc' }
   });
 
   if (!campaign) {
+    campaign = await prisma.campaign.findFirst({
+      include: { offers: { orderBy: { sequencePosition: 'asc' } } },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  if (!campaign) {
     campaign = await prisma.campaign.create({
       data: {
-        name: "Main Campaign",
+        name: "Grand Opening Special",
         status: "ACTIVE",
         selectionMode: "WEIGHTED",
+        offers: {
+          create: DEFAULT_OFFERS_LIST,
+        },
       },
-      include: { offers: true }
+      include: { offers: { orderBy: { sequencePosition: 'asc' } } }
+    });
+  } else if (campaign.offers.length === 0) {
+    const campaignId = campaign.id;
+    await prisma.offer.createMany({
+      data: DEFAULT_OFFERS_LIST.map((offer) => ({
+        ...offer,
+        campaignId,
+        isActive: true,
+      })),
+    });
+    campaign = await prisma.campaign.findUniqueOrThrow({
+      where: { id: campaignId },
+      include: { offers: { orderBy: { sequencePosition: 'asc' } } },
     });
   }
 
@@ -165,9 +197,16 @@ export default async function OffersAdmin() {
         {/* LIST OFFERS SIDE */}
         <div className="lg:col-span-7 xl:col-span-8">
           <Card className="bg-zinc-900/55 border-pink-500/20 backdrop-blur-md">
-            <CardHeader>
-              <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Current Offers</CardTitle>
-              <CardDescription className="text-zinc-100/50">Manage the offers and their probabilities. Total weight represents 100% chance.</CardDescription>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Current Offers ({campaign.offers.length})</CardTitle>
+                <CardDescription className="text-zinc-100/50">Manage the offers and their probabilities. Total weight represents 100% chance.</CardDescription>
+              </div>
+              <form action={seedDefaultOffers.bind(null, campaign.id) as unknown as (payload: FormData) => void}>
+                <Button variant="outline" size="sm" type="submit" className="bg-pink-500/10 border-pink-500/30 text-pink-300 hover:bg-pink-500/20 text-xs shrink-0 cursor-pointer">
+                  ⚡ Load Default 6 Offers
+                </Button>
+              </form>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
