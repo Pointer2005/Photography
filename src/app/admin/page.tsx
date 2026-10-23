@@ -6,6 +6,7 @@ import { MessageCircle, CheckCircle2, Clock, Users, Trophy } from 'lucide-react'
 import QuickCodeChecker from './QuickCodeChecker';
 import RedeemActionCell from './RedeemActionCell';
 import AdminFilterBar from './AdminFilterBar';
+import { getPhoneLookupVariations } from '@/lib/phone';
 
 export const instant = false;
 
@@ -24,8 +25,10 @@ export default async function AdminDashboard(props: {
   const whereClause: import('@prisma/client').Prisma.CustomerWhereInput = {};
 
   if (query) {
+    const phoneVariations = getPhoneLookupVariations(query);
     whereClause.OR = [
       { name: { contains: query, mode: 'insensitive' } },
+      { phone: { in: phoneVariations } },
       { phone: { contains: query } },
       { claims: { some: { claimCode: { contains: query, mode: 'insensitive' } } } },
     ];

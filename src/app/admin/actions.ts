@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { login } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { getPhoneLookupVariations } from '@/lib/phone';
 
 export async function adminLoginAction(prevState: unknown, formData: FormData) {
   const username = formData.get('username') as string;
@@ -136,10 +137,12 @@ export async function verifyClaimLookup(rawQuery: string) {
   }
 
   try {
+    const variations = getPhoneLookupVariations(query);
     const claim = await prisma.claim.findFirst({
       where: {
         OR: [
           { claimCode: { equals: query, mode: 'insensitive' } },
+          { customer: { phone: { in: variations } } },
           { customer: { phone: { contains: query } } },
         ],
       },

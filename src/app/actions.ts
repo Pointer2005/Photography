@@ -2,10 +2,11 @@
 
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
+import { normalizePhoneNumber, getPhoneLookupVariations } from '@/lib/phone';
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number"),
+  phone: z.string().min(7, "Invalid phone number"),
   consentGiven: z.boolean().refine(val => val === true, {
     message: "You must consent to continue",
   }),
@@ -13,20 +14,28 @@ const registerSchema = z.object({
 });
 
 export async function checkCustomerPhone(phone: string, consentGiven: boolean, campaignId: string) {
-  if (!/^\+?[1-9]\d{1,14}$/.test(phone)) {
-    return { success: false, message: "Invalid phone number format" };
+  const { valid, normalized, error } = normalizePhoneNumber(phone);
+  if (!valid || !normalized) {
+    return { success: false, message: error || "Invalid phone number format" };
   }
 
   if (!consentGiven) {
     return { success: false, message: "You must consent to continue" };
   }
 
-  const customer = await prisma.customer.findUnique({ where: { phone } });
+  const variations = getPhoneLookupVariations(normalized);
+  const customer = await prisma.customer.findFirst({
+    where: { phone: { in: variations } }
+  });
 
   if (customer) {
     await prisma.customer.update({
       where: { id: customer.id },
-      data: { consentGiven: true, consentAt: new Date() }
+      data: {
+        consentGiven: true,
+        consentAt: new Date(),
+        phone: normalized,
+      }
     });
 
     const claim = await prisma.claim.findUnique({
@@ -39,18 +48,25 @@ export async function checkCustomerPhone(phone: string, consentGiven: boolean, c
       isNewUser: false,
       customerId: customer.id,
       name: customer.name,
+      normalizedPhone: normalized,
       claim: claim || null
     };
   } else {
-    return { success: true, isNewUser: true };
+    return { success: true, isNewUser: true, normalizedPhone: normalized };
   }
 }
 
 export async function registerCustomer(prevState: unknown, formData: FormData) {
   try {
+    const rawPhone = formData.get('phone') as string;
+    const { valid, normalized, error } = normalizePhoneNumber(rawPhone);
+    if (!valid || !normalized) {
+      return { success: false, errors: { phone: [error || "Invalid phone number"] } };
+    }
+
     const rawData = {
       name: formData.get('name') as string,
-      phone: formData.get('phone') as string,
+      phone: normalized,
       consentGiven: formData.get('consentGiven') === 'on',
       campaignId: formData.get('campaignId') as string,
     };
@@ -61,8 +77,11 @@ export async function registerCustomer(prevState: unknown, formData: FormData) {
     }
 
     const { name, phone, consentGiven } = validated.data;
+    const variations = getPhoneLookupVariations(phone);
 
-    let customer = await prisma.customer.findUnique({ where: { phone } });
+    let customer = await prisma.customer.findFirst({
+      where: { phone: { in: variations } }
+    });
     if (!customer) {
       customer = await prisma.customer.create({
         data: { name, phone, consentGiven, consentAt: new Date() },
@@ -70,7 +89,7 @@ export async function registerCustomer(prevState: unknown, formData: FormData) {
     } else {
       customer = await prisma.customer.update({
         where: { id: customer.id },
-        data: { name, consentGiven, consentAt: new Date() },
+        data: { name, phone, consentGiven, consentAt: new Date() },
       });
     }
 
@@ -123,8 +142,13 @@ export async function executeSpin(customerId: string, campaignId: string) {
 
   // 1. Check for specific mobile number overrides
   if (customer) {
+    const variations = getPhoneLookupVariations(customer.phone);
     const override = await prisma.offerOverride.findFirst({
-      where: { phone: customer.phone, campaignId, isUsed: false },
+      where: {
+        phone: { in: variations },
+        campaignId,
+        isUsed: false
+      },
       include: { offer: true }
     });
 

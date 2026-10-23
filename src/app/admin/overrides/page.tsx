@@ -57,10 +57,13 @@ export default async function OverridesAdmin() {
                   <Input
                     type="tel"
                     name="phone"
-                    placeholder="+91 9876543210"
+                    placeholder="e.g. 1234567890, 911234567890, +91..."
                     required
                     className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500"
                   />
+                  <p className="text-[11px] text-zinc-100/40">
+                    Accepts 10-digit (1234567890), 91 prefix (911234567890), or with + (+911234567890).
+                  </p>
                 </div>
                 
                 <div className="space-y-2">

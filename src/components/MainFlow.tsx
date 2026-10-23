@@ -82,6 +82,9 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
       const result = await checkCustomerPhone(phone, consent, campaign.id);
 
       if (result.success) {
+        if (result.normalizedPhone) {
+          setPhone(result.normalizedPhone);
+        }
         if (result.isNewUser) {
           setStage('register');
         } else {
@@ -300,7 +303,7 @@ Please let me know how to redeem it.`;
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-lg py-6 backdrop-blur-md rounded-xl transition-all duration-300 font-medium"
-                  placeholder="+91 98765 43210"
+                  placeholder="e.g. 1234567890 or +91..."
                   required
                 />
               </div>

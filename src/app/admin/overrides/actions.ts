@@ -2,31 +2,53 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { normalizePhoneNumber, getPhoneLookupVariations } from '@/lib/phone';
 
 export async function addOverride(campaignId: string, formData: FormData) {
-  const phone = formData.get('phone') as string;
+  const rawPhone = formData.get('phone') as string;
   const offerId = formData.get('offerId') as string;
 
+  const { valid, normalized, error } = normalizePhoneNumber(rawPhone);
+  if (!valid || !normalized) {
+    return { success: false, error: error || "Invalid phone number format" };
+  }
+
   try {
-    await prisma.offerOverride.upsert({
+    const variations = getPhoneLookupVariations(normalized);
+
+    // Look for any existing override for this number under any variation
+    const existing = await prisma.offerOverride.findFirst({
       where: {
-        phone_campaignId: {
-          phone,
-          campaignId
-        }
-      },
-      update: {
-        offerId,
-        isUsed: false
-      },
-      create: {
-        phone,
-        offerId,
-        campaignId
+        campaignId,
+        phone: { in: variations }
       }
     });
 
-    revalidatePath('/admin/overrides');
+    if (existing) {
+      await prisma.offerOverride.update({
+        where: { id: existing.id },
+        data: {
+          phone: normalized,
+          offerId,
+          isUsed: false
+        }
+      });
+    } else {
+      await prisma.offerOverride.create({
+        data: {
+          phone: normalized,
+          offerId,
+          campaignId,
+          isUsed: false
+        }
+      });
+    }
+
+    try {
+      revalidatePath('/admin/overrides');
+    } catch {
+      // Ignore if outside HTTP request context (e.g. CLI/tests)
+    }
     return { success: true };
   } catch (error) {
     console.error("Error adding override:", error);
@@ -39,7 +61,11 @@ export async function deleteOverride(overrideId: string) {
     await prisma.offerOverride.delete({
       where: { id: overrideId }
     });
-    revalidatePath('/admin/overrides');
+    try {
+      revalidatePath('/admin/overrides');
+    } catch {
+      // Ignore if outside HTTP request context (e.g. CLI/tests)
+    }
     return { success: true };
   } catch (error) {
     console.error("Error deleting override:", error);
