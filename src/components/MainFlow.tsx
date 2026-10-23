@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { registerCustomer, executeSpin, markWhatsAppClaimInitiated } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,10 +19,21 @@ type Campaign = {
   offers: { id: string; name: string; imageUrl?: string | null;[key: string]: unknown }[];
 };
 
+type ClaimData = {
+  claimCode: string;
+  offerId: string;
+  offer?: {
+    name: string;
+    description: string | null;
+    imageUrl?: string | null;
+  };
+  [key: string]: unknown;
+};
+
 export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campaign; whatsappNumber: string }) {
   const [stage, setStage] = useState<'login' | 'register' | 'wheel' | 'result'>('login');
   const [customerId, setCustomerId] = useState<string | null>(null);
-  const [claim, setClaim] = useState<{ claimCode: string; offerId: string; offer?: { name: string; description: string | null; imageUrl?: string | null };[key: string]: unknown } | null>(null);
+  const [claim, setClaim] = useState<ClaimData | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
 
   const [name, setName] = useState('');
@@ -30,6 +41,31 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const pendingSpinRef = useRef<Promise<{ success: boolean; claim?: unknown; message?: string }> | null>(null);
+
+  // Preload dynamic SpinWheel bundle early in background
+  useEffect(() => {
+    import('./SpinWheel');
+  }, []);
+
+  // Pre-calculate winning prize as soon as user reaches the wheel stage
+  // This allows the wheel to spin IMMEDIATELY on click without network lag
+  useEffect(() => {
+    if (stage === 'wheel' && customerId && !claim && !pendingSpinRef.current) {
+      pendingSpinRef.current = executeSpin(customerId, campaign.id)
+        .then((result) => {
+          if (result.success && result.claim) {
+            setClaim(result.claim as unknown as ClaimData);
+          }
+          return result;
+        })
+        .catch((err) => {
+          console.error("Spin preload error:", err);
+          return { success: false, message: "Network error" };
+        });
+    }
+  }, [stage, customerId, campaign.id, claim]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +88,7 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
           setName(result.name || '');
           setCustomerId(result.customerId!);
           if (result.claim) {
-            setClaim(result.claim);
+            setClaim(result.claim as unknown as ClaimData);
             setStage('result');
           } else {
             setStage('wheel');
@@ -106,6 +142,22 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
     if (!customerId) return;
     setIsSpinning(true);
 
+    // If pre-fetch already resolved, wheel will spin instantly on this frame
+    if (claim) {
+      return;
+    }
+
+    // If pre-fetch is in flight, await it
+    if (pendingSpinRef.current) {
+      const result = await pendingSpinRef.current;
+      if (!result?.success) {
+        setError(result?.message || "Spin failed");
+        setIsSpinning(false);
+      }
+      return;
+    }
+
+    // Fallback: execute directly
     const result = await executeSpin(customerId, campaign.id);
     if (!result.success) {
       setError(result.message || "Spin failed");
@@ -113,8 +165,7 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
       return;
     }
 
-    setClaim(result.claim || null);
-    // The SpinWheel component handles the delay/animation
+    setClaim(result.claim ? (result.claim as unknown as ClaimData) : null);
   };
 
   const handleSpinComplete = () => {
@@ -186,7 +237,7 @@ Please let me know how to redeem it.`;
   const stepLabels = ['Details', 'Spin', 'Claim'];
 
   return (
-    <Card className="bg-white/5 backdrop-blur-2xl border-white/10 shadow-2xl relative rounded-[2rem] overflow-hidden">
+    <Card className="bg-zinc-950/80 backdrop-blur-xl border-white/10 shadow-2xl relative rounded-[2rem] overflow-hidden transform-gpu">
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent z-0" />
       <CardContent className="p-8 md:p-12 relative z-10 border-0">
 

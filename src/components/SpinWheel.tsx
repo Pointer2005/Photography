@@ -43,74 +43,51 @@ export default function SpinWheel({ offers, winningOfferId, onSpinStart, onSpinC
   // We only start the actual wheel component spin when we know the prize number
   const mustStartSpinning = isSpinning && winningOfferId !== null;
 
-  // Synchronize ticking sound with actual wheel rotation
+  // Synchronize ticking sound with wheel rotation using procedural audio schedule
+  // This avoids expensive getComputedStyle / layout reflows on every animation frame
   useEffect(() => {
     if (!mustStartSpinning) return;
 
-    let animationFrameId: number;
-    let lastAngle: number | null = null;
-    let totalRotation = 0;
-    let lastSector = 0;
-    const sectorAngle = 360 / (offers.length || 1);
+    const tickDelays: number[] = [];
+    let currentTime = 40;
 
-    const checkRotation = () => {
-      if (!wheelContainerRef.current) {
-        animationFrameId = requestAnimationFrame(checkRotation);
-        return;
-      }
+    // Acceleration phase (0ms - 900ms): intervals rapidly decrease
+    let interval = 130;
+    while (currentTime < 900) {
+      tickDelays.push(currentTime);
+      interval = Math.max(35, interval * 0.84);
+      currentTime += interval;
+    }
 
-      const canvas = wheelContainerRef.current.querySelector('canvas');
-      const rotationContainer = canvas?.parentElement;
+    // Peak cruising phase (900ms - 1200ms): fast uniform clicks
+    while (currentTime < 1200) {
+      tickDelays.push(currentTime);
+      currentTime += 36;
+    }
 
-      if (rotationContainer) {
-        const style = window.getComputedStyle(rotationContainer);
-        const matrix = style.transform;
+    // Deceleration phase (1200ms - 3800ms): intervals expand naturally to a stop
+    interval = 38;
+    while (currentTime < 3800) {
+      tickDelays.push(currentTime);
+      interval = interval * 1.14;
+      currentTime += interval;
+    }
 
-        if (matrix && matrix !== 'none') {
-          const values = matrix.split('(')[1].split(')')[0].split(',');
-          const a = parseFloat(values[0]);
-          const b = parseFloat(values[1]);
-
-          // Calculate current angle in degrees (0 to 360)
-          let angle = Math.atan2(b, a) * (180 / Math.PI);
-          if (angle < 0) angle += 360;
-
-          if (lastAngle !== null) {
-            let diff = angle - lastAngle;
-
-            // Handle wrap around
-            if (diff > 180) diff -= 360;
-            else if (diff < -180) diff += 360;
-
-            totalRotation += diff;
-
-            // Determine if we crossed a sector boundary
-            const currentSector = Math.floor(Math.abs(totalRotation) / sectorAngle);
-            if (currentSector !== lastSector) {
-              playTick();
-              lastSector = currentSector;
-            }
-          }
-          lastAngle = angle;
-        }
-      }
-
-      if (isSpinning) {
-        animationFrameId = requestAnimationFrame(checkRotation);
-      }
-    };
-
-    animationFrameId = requestAnimationFrame(checkRotation);
+    const timerIds = tickDelays.map(delay =>
+      setTimeout(() => {
+        playTick();
+      }, delay)
+    );
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      timerIds.forEach(clearTimeout);
     };
-  }, [mustStartSpinning, isSpinning, offers.length, playTick]);
+  }, [mustStartSpinning, playTick]);
 
   return (
     <div className="relative flex flex-col items-center">
-      {/* Outer glow ring */}
-      <div className="relative animate-pulse-glow rounded-full" ref={wheelContainerRef}>
+      {/* Outer glow ring with hardware acceleration */}
+      <div className="relative rounded-full shadow-[0_0_35px_rgba(200,162,78,0.25)]" ref={wheelContainerRef}>
         {/* Premium outer ring */}
         <div className="p-[3px] rounded-full bg-gradient-to-br from-[#DFC07A] via-[#C8A24E] to-[#7A5F25]">
           <div className="bg-[#0C0B09] rounded-full p-2 relative">
@@ -131,7 +108,7 @@ export default function SpinWheel({ offers, winningOfferId, onSpinStart, onSpinC
               radiusLineWidth={1}
               fontSize={13}
               textDistance={65}
-              spinDuration={0.8}
+              spinDuration={0.35}
             />
 
             {/* Center Spin Button */}

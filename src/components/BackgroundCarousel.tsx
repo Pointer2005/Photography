@@ -12,23 +12,23 @@ import {
 
 const images = [
   {
-    desktop: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop',
-    mobile: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&h=1422&auto=format&fit=crop',
+    desktop: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=70&w=1200&auto=format&fit=crop',
+    mobile: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=70&w=640&h=1138&auto=format&fit=crop',
     alt: 'Wedding Photography'
   },
   {
-    desktop: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=2070&auto=format&fit=crop',
-    mobile: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=800&h=1422&auto=format&fit=crop',
+    desktop: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=70&w=1200&auto=format&fit=crop',
+    mobile: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=70&w=640&h=1138&auto=format&fit=crop',
     alt: 'Couple Photography'
   },
   {
-    desktop: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop',
-    mobile: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&h=1422&auto=format&fit=crop',
+    desktop: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=70&w=1200&auto=format&fit=crop',
+    mobile: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=70&w=640&h=1138&auto=format&fit=crop',
     alt: 'Event Photography'
   },
   {
-    desktop: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070&auto=format&fit=crop',
-    mobile: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&h=1422&auto=format&fit=crop',
+    desktop: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=70&w=1200&auto=format&fit=crop',
+    mobile: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=70&w=640&h=1138&auto=format&fit=crop',
     alt: 'Pre-wedding Photography'
   }
 ];
@@ -45,7 +45,7 @@ export default function BackgroundCarousel() {
         plugins={plugins}
         opts={{
           loop: true,
-          duration: 40, // slow down the transition
+          duration: 30,
         }}
         className="w-full h-full"
       >
@@ -58,9 +58,10 @@ export default function BackgroundCarousel() {
                 alt={image.alt}
                 fill
                 priority={index === 0}
+                loading={index === 0 ? "eager" : "lazy"}
                 className="object-cover object-[center_20%] md:hidden"
-                sizes="100vw"
-                quality={75}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                quality={70}
               />
               {/* Desktop Image */}
               <Image
@@ -68,9 +69,10 @@ export default function BackgroundCarousel() {
                 alt={image.alt}
                 fill
                 priority={index === 0}
+                loading={index === 0 ? "eager" : "lazy"}
                 className="hidden md:block object-cover object-center"
-                sizes="100vw"
-                quality={75}
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                quality={70}
               />
             </CarouselItem>
           ))}

@@ -47,9 +47,9 @@ export default async function Home() {
       {/* ── Right Half: Interactive Form ───────────────────────────────── */}
       <div className="relative w-full lg:w-1/2 min-h-[55vh] lg:min-h-screen flex flex-col items-center justify-center p-6 md:p-12 lg:p-16 bg-[#09090b] z-10">
         
-        {/* Vibrant ambient glows */}
-        <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-pink-500/15 rounded-full blur-[100px] pointer-events-none"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-indigo-500/15 rounded-full blur-[100px] pointer-events-none"></div>
+        {/* Vibrant ambient glows with GPU-accelerated radial gradients */}
+        <div className="absolute top-[-10%] right-[-10%] w-[450px] h-[450px] bg-[radial-gradient(circle,rgba(236,72,153,0.16)_0%,transparent_70%)] rounded-full pointer-events-none transform-gpu"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[450px] h-[450px] bg-[radial-gradient(circle,rgba(99,102,241,0.16)_0%,transparent_70%)] rounded-full pointer-events-none transform-gpu"></div>
 
         {/* ── Main Content Card ───────────────────── */}
         <div className="relative z-10 w-full max-w-md">
@@ -58,7 +58,7 @@ export default async function Home() {
               <MainFlow campaign={campaign} whatsappNumber={process.env.WHATSAPP_NUMBER || "919883135275"} />
             </div>
           ) : (
-            <Card className="animate-fade-up delay-400 bg-white/5 backdrop-blur-2xl border-white/10 shadow-2xl relative w-full text-center overflow-hidden rounded-[2rem]">
+            <Card className="animate-fade-up delay-400 bg-zinc-950/80 backdrop-blur-xl border-white/10 shadow-2xl relative w-full text-center overflow-hidden rounded-[2rem] transform-gpu">
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent z-0" />
               <CardContent className="p-10 relative z-10 border-0">
                 <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500 mb-3 tracking-tight">Coming Soon</h2>
