@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 type Offer = {
@@ -194,10 +194,11 @@ export default function SpinWheel({
         const found = offers.findIndex(o => o.id === targetId);
         if (found >= 0) targetIndex = found;
       }
-      // Top pointer is at 12 o'clock (-PI/2 or 3*PI/2)
-      // We want: (targetIndex * sliceAngle + sliceAngle/2 + finalAngle) % 2PI = 3*PI/2
+      // Pointer is at the top-right (-43 degrees / 317 degrees, ~1:45 o'clock)
+      // where it was before in react-custom-roulette
+      const pointerAngle = (317 * Math.PI) / 180;
       const targetSliceCenter = targetIndex * sliceAngle + sliceAngle / 2;
-      const targetNormalized = (3 * Math.PI / 2) - targetSliceCenter;
+      const targetNormalized = pointerAngle - targetSliceCenter;
       const fullSpins = 6 * (2 * Math.PI);
       return startAngle + fullSpins + ((targetNormalized - (startAngle % (2 * Math.PI)) + 4 * Math.PI) % (2 * Math.PI));
     };
@@ -239,7 +240,7 @@ export default function SpinWheel({
     };
 
     animFrameRef.current = requestAnimationFrame(animate);
-  }, [drawWheel, numSlices, offers, onSpinComplete, playTick, playWin, sliceAngle]);
+  }, [drawWheel, offers, onSpinComplete, playTick, playWin, sliceAngle]);
 
   const handleSpinClick = async () => {
     if (isSpinning || isSpinningRef.current || offers.length === 0) return;
@@ -278,7 +279,7 @@ export default function SpinWheel({
           {/* Center Spin Button */}
           <button
             onClick={handleSpinClick}
-            disabled={isSpinning || isSpinningRef.current}
+            disabled={isSpinning}
             aria-label="Spin the wheel"
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[72px] h-[72px] sm:w-20 sm:h-20 bg-gradient-to-br from-[#DFC07A] via-[#C8A24E] to-[#9E7D3A] hover:from-[#E8CC8C] hover:via-[#D4AF55] hover:to-[#B0892F] text-[#0C0B09] font-serif font-black text-sm sm:text-base rounded-full transition-transform duration-200 hover:scale-[1.05] active:scale-[0.95] disabled:opacity-85 shadow-[0_0_24px_rgba(200,162,78,0.5)] flex items-center justify-center border-[3px] border-[#0C0B09] z-20 tracking-[0.15em] uppercase cursor-pointer"
           >
@@ -288,23 +289,14 @@ export default function SpinWheel({
           </button>
         </div>
 
-        {/* Top Gold Pointer Arrow */}
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] pointer-events-none">
-          <svg width="26" height="32" viewBox="0 0 26 32" fill="none">
-            <path
-              d="M13 30L2 6C0.6 3.5 2.4 0 5.3 0H20.7C23.6 0 25.4 3.5 24 6L13 30Z"
-              fill="url(#goldPointerGrad)"
-              stroke="#0C0B09"
-              strokeWidth="2"
-            />
-            <defs>
-              <linearGradient id="goldPointerGrad" x1="0" y1="0" x2="26" y2="30" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#FFF4C2" />
-                <stop offset="0.5" stopColor="#C8A24E" />
-                <stop offset="1" stopColor="#7A5F25" />
-              </linearGradient>
-            </defs>
-          </svg>
+        {/* Pointer (restored to top-right where it was before) */}
+        <div className="absolute top-2 right-1.5 w-[50px] sm:w-[54px] z-30 drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] pointer-events-none select-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/roulette-pointer.png"
+            alt="Wheel Pointer"
+            className="w-full h-auto object-contain"
+          />
         </div>
       </div>
     </div>
