@@ -6,14 +6,16 @@ import {
   updateCampaignName,
   updateCampaignStatus,
   seedDefaultOffers,
+  deduplicateOffers,
+  resetToDefaultOffers,
 } from './actions';
-import { DEFAULT_OFFERS_LIST } from '@/lib/defaultOffers';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sparkles, Trash2, AlertTriangle } from 'lucide-react';
 
 export const instant = false;
 
@@ -37,24 +39,8 @@ export default async function OffersAdmin() {
         name: "Grand Opening Special",
         status: "ACTIVE",
         selectionMode: "WEIGHTED",
-        offers: {
-          create: DEFAULT_OFFERS_LIST,
-        },
       },
       include: { offers: { orderBy: { sequencePosition: 'asc' } } }
-    });
-  } else if (campaign.offers.length === 0) {
-    const campaignId = campaign.id;
-    await prisma.offer.createMany({
-      data: DEFAULT_OFFERS_LIST.map((offer) => ({
-        ...offer,
-        campaignId,
-        isActive: true,
-      })),
-    });
-    campaign = await prisma.campaign.findUniqueOrThrow({
-      where: { id: campaignId },
-      include: { offers: { orderBy: { sequencePosition: 'asc' } } },
     });
   }
 
@@ -199,20 +185,91 @@ export default async function OffersAdmin() {
           <Card className="bg-zinc-900/55 border-pink-500/20 backdrop-blur-md">
             <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Current Offers ({campaign.offers.length})</CardTitle>
-                <CardDescription className="text-zinc-100/50">Manage the offers and their probabilities. Total weight represents 100% chance.</CardDescription>
+                <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">
+                  Current Offers ({campaign.offers.length})
+                </CardTitle>
+                <CardDescription className="text-zinc-100/50">
+                  Manage the offers and their probabilities. Total weight represents 100% chance.
+                </CardDescription>
               </div>
-              <form action={seedDefaultOffers.bind(null, campaign.id) as unknown as (payload: FormData) => void}>
-                <Button variant="outline" size="sm" type="submit" className="bg-pink-500/10 border-pink-500/30 text-pink-300 hover:bg-pink-500/20 text-xs shrink-0 cursor-pointer">
-                  ⚡ Load Default 6 Offers
-                </Button>
-              </form>
+              <div className="flex items-center gap-2 flex-wrap">
+                {campaign.offers.length > 6 && (
+                  <form action={deduplicateOffers.bind(null, campaign.id) as unknown as (payload: FormData) => void}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="submit"
+                      className="bg-amber-500/15 border-amber-500/40 text-amber-300 hover:bg-amber-500/25 text-xs shrink-0 cursor-pointer"
+                    >
+                      🧹 Clean Up Duplicates
+                    </Button>
+                  </form>
+                )}
+                {campaign.offers.length === 0 && (
+                  <form action={seedDefaultOffers.bind(null, campaign.id) as unknown as (payload: FormData) => void}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="submit"
+                      className="bg-pink-500/10 border-pink-500/30 text-pink-300 hover:bg-pink-500/20 text-xs shrink-0 cursor-pointer"
+                    >
+                      ⚡ Load Default 6 Offers
+                    </Button>
+                  </form>
+                )}
+                <form action={resetToDefaultOffers.bind(null, campaign.id) as unknown as (payload: FormData) => void}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="submit"
+                    className="bg-white/5 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-white/10 text-xs shrink-0 cursor-pointer"
+                    title="Resets unredeemed offers to the 6 default promotional offers"
+                  >
+                    Reset to 6 Defaults
+                  </Button>
+                </form>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {campaign.offers.length > 6 && (
+                  <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-amber-300 text-sm">
+                          Duplicate Offers Detected ({campaign.offers.length} total offers)
+                        </div>
+                        <div className="text-xs text-amber-200/70 mt-0.5">
+                          Multiple identical copies of the offers were detected. Click &quot;Clean Up Duplicates&quot; to keep only 1 of each unique offer.
+                        </div>
+                      </div>
+                    </div>
+                    <form action={deduplicateOffers.bind(null, campaign.id) as unknown as (payload: FormData) => void}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        type="submit"
+                        className="bg-amber-500/25 border-amber-500/50 text-amber-200 hover:bg-amber-500/40 text-xs font-semibold shrink-0 cursor-pointer"
+                      >
+                        🧹 Clean Up Now
+                      </Button>
+                    </form>
+                  </div>
+                )}
                 {campaign.offers.length === 0 ? (
-                  <div className="text-zinc-100/50 p-8 border border-dashed border-zinc-100/10 rounded-xl text-center">
-                    No offers added yet. Create one to populate the wheel.
+                  <div className="text-zinc-100/50 p-10 border border-dashed border-zinc-100/10 rounded-xl text-center space-y-4">
+                    <div>No offers added yet. Create one on the left or load the default 6 offers.</div>
+                    <form action={seedDefaultOffers.bind(null, campaign.id) as unknown as (payload: FormData) => void}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        type="submit"
+                        className="bg-pink-500/15 border-pink-500/40 text-pink-300 hover:bg-pink-500/25 text-sm px-5 py-2 cursor-pointer font-bold"
+                      >
+                        ⚡ Load Default 6 Offers
+                      </Button>
+                    </form>
                   </div>
                 ) : (
                   campaign.offers.map(offer => {
