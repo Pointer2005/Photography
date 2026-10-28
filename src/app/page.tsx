@@ -38,13 +38,13 @@ export default async function Home() {
         {/* ── Centered Logo & Branding ─────────────────── */}
         <header className="flex flex-col items-center text-center mb-3 sm:mb-4 shrink-0">
           <h1 className="sr-only">the_Cinemoy - Shoot | Edit | Create</h1>
-          <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden drop-shadow-[0_10px_28px_rgba(0,0,0,0.9)] border-2 border-white/25 bg-black/60 backdrop-blur-md mb-2">
+          <div className="relative w-[125px] h-[125px] sm:w-[146px] sm:h-[146px] rounded-full overflow-hidden drop-shadow-[0_10px_28px_rgba(0,0,0,0.9)] border-2 border-white/25 bg-black/60 backdrop-blur-md mb-2">
             <Image
               src="/images/logo.png"
               alt="the_Cinemoy - Professional Experience"
               fill
-              sizes="(max-width: 640px) 96px, 112px"
-              className="object-contain rounded-full p-2"
+              sizes="(max-width: 640px) 125px, 146px"
+              className="object-contain rounded-full p-2.5"
               priority
             />
           </div>
