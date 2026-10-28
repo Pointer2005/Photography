@@ -260,11 +260,11 @@ export default function SpinWheel({
   }, []);
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-[min(76vw,290px)] sm:w-[320px] md:w-[340px] aspect-square mx-auto select-none">
+    <div className="relative flex flex-col items-center justify-center w-[min(92vw,min(54dvh,395px))] sm:w-[min(84vw,min(56dvh,450px))] md:w-[480px] aspect-square mx-auto select-none">
       {/* Outer Container with Vibrant Glow */}
-      <div className="relative p-1.5 rounded-full bg-gradient-to-br from-pink-500 via-white/30 to-indigo-500 shadow-[0_0_28px_rgba(236,72,153,0.3)] w-full h-full flex items-center justify-center">
+      <div className="relative p-1.5 sm:p-2 rounded-full bg-gradient-to-br from-pink-500 via-white/30 to-indigo-500 shadow-[0_0_32px_rgba(236,72,153,0.35)] w-full h-full flex items-center justify-center">
         {/* Dark Bezel Inset */}
-        <div className="bg-[#09090b] rounded-full p-1.5 w-full h-full relative flex items-center justify-center overflow-hidden">
+        <div className="bg-[#09090b] rounded-full p-1.5 sm:p-2 w-full h-full relative flex items-center justify-center overflow-hidden">
           {/* Wheel Canvas */}
           <canvas
             ref={canvasRef}
@@ -279,7 +279,7 @@ export default function SpinWheel({
             onClick={handleSpinClick}
             disabled={isSpinning}
             aria-label="Spin the wheel"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-18 sm:h-18 lg:w-20 lg:h-20 bg-gradient-to-br from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white font-black text-xs sm:text-sm lg:text-base rounded-full transition-transform duration-200 hover:scale-[1.05] active:scale-[0.95] disabled:opacity-85 shadow-[0_0_20px_rgba(236,72,153,0.5)] flex items-center justify-center border-2 sm:border-[3px] border-[#09090b] z-20 tracking-[0.15em] uppercase cursor-pointer"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-18 h-18 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white font-black text-sm sm:text-base lg:text-lg rounded-full transition-transform duration-200 hover:scale-[1.05] active:scale-[0.95] disabled:opacity-85 shadow-[0_0_24px_rgba(236,72,153,0.5)] flex items-center justify-center border-2 sm:border-[3px] border-[#09090b] z-20 tracking-[0.15em] uppercase cursor-pointer"
           >
             <span className="drop-shadow-sm font-extrabold tracking-wider">
               {isSpinning ? '...' : 'SPIN'}
@@ -288,7 +288,7 @@ export default function SpinWheel({
         </div>
 
         {/* Pointer */}
-        <div className="absolute top-1.5 right-1.5 w-[42px] sm:w-[48px] lg:w-[54px] z-30 drop-shadow-[0_4px_10px_rgba(0,0,0,0.85)] pointer-events-none select-none">
+        <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 w-[48px] sm:w-[56px] lg:w-[62px] z-30 drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] pointer-events-none select-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/roulette-pointer.png"

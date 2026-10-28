@@ -236,7 +236,7 @@ Please let me know how to redeem it.`;
   return (
     <Card className="bg-zinc-950/85 backdrop-blur-xl border-white/10 shadow-2xl relative rounded-2xl sm:rounded-[2rem] overflow-hidden transform-gpu">
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent z-0" />
-      <CardContent className="p-5 sm:p-7 relative z-10 border-0">
+      <CardContent className="p-4 sm:p-6 relative z-10 border-0">
 
         {/* ── Error banner ───────────────────────── */}
         {error && (

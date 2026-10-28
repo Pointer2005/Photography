@@ -33,7 +33,7 @@ export default async function Home() {
       <div className="absolute -bottom-24 -left-24 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-[radial-gradient(circle,rgba(99,102,241,0.18)_0%,transparent_70%)] rounded-full pointer-events-none transform-gpu" />
 
       {/* ── Main Content Container (Vertically Centered) ── */}
-      <div className="relative z-10 w-full max-w-sm sm:max-w-md my-auto flex flex-col items-center shrink-0">
+      <div className="relative z-10 w-full max-w-[min(94vw,440px)] sm:max-w-[500px] md:max-w-[540px] my-auto flex flex-col items-center shrink-0">
         
         {/* ── Centered Logo & Branding ─────────────────── */}
         <header className="flex flex-col items-center text-center mb-3 sm:mb-4 shrink-0">
