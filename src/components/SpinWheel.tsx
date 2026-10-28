@@ -288,7 +288,7 @@ export default function SpinWheel({
         </div>
 
         {/* Pointer */}
-        <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 w-[48px] sm:w-[56px] lg:w-[62px] z-30 drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] pointer-events-none select-none">
+        <div className="absolute top-[6.8%] right-[4.9%] w-[13.5%] z-30 drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] pointer-events-none select-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/roulette-pointer.png"
