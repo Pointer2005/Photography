@@ -42,9 +42,13 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
 
   const pendingSpinRef = useRef<Promise<{ success: boolean; claim?: unknown; message?: string }> | null>(null);
 
-  // Preload dynamic SpinWheel bundle early in background
+  // Preload dynamic SpinWheel bundle early in background & easter egg
   useEffect(() => {
     import('./SpinWheel');
+    console.log(
+      '%c Error makers ',
+      'background: linear-gradient(90deg, #ec4899, #6366f1); color: #ffffff; font-weight: bold; font-size: 12px; padding: 4px 8px; border-radius: 4px;'
+    );
   }, []);
 
   // Pre-calculate winning prize as soon as user reaches the wheel stage
