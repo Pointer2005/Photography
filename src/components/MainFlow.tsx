@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { registerCustomer, executeSpin, markWhatsAppClaimInitiated } from '@/app/actions';
+import { startCustomerFlow, registerCustomer, executeSpin, markWhatsAppClaimInitiated } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -38,7 +37,6 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,31 +69,36 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
     e.preventDefault();
     setError(null);
 
-    if (!phone || !consent) {
-      setError("Please provide your phone number and consent.");
+    const trimmedName = name.trim();
+    const trimmedPhone = phone.trim();
+
+    if (!trimmedName) {
+      setError("Please provide your name.");
+      return;
+    }
+
+    if (!trimmedPhone) {
+      setError("Please provide your mobile number.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const { checkCustomerPhone } = await import('@/app/actions');
-      const result = await checkCustomerPhone(phone, consent, campaign.id);
+      const result = await startCustomerFlow(trimmedName, trimmedPhone, campaign.id);
 
       if (result.success) {
         if (result.normalizedPhone) {
           setPhone(result.normalizedPhone);
         }
-        if (result.isNewUser) {
-          setStage('register');
+        if (result.name) {
+          setName(result.name);
+        }
+        setCustomerId(result.customerId!);
+        if (result.claim) {
+          setClaim(result.claim as unknown as ClaimData);
+          setStage('result');
         } else {
-          setName(result.name || '');
-          setCustomerId(result.customerId!);
-          if (result.claim) {
-            setClaim(result.claim as unknown as ClaimData);
-            setStage('result');
-          } else {
-            setStage('wheel');
-          }
+          setStage('wheel');
         }
       } else {
         setError(result.message || "An error occurred");
@@ -122,7 +125,6 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
       const formData = new FormData();
       formData.append('name', name);
       formData.append('phone', phone);
-      formData.append('consentGiven', 'on'); // Already consented in login stage
       formData.append('campaignId', campaign.id);
 
       const result = await registerCustomer(null, formData);
@@ -234,41 +236,10 @@ Please let me know how to redeem it.`;
     }
   };
 
-  // Step indicator
-  const stageIndex = { login: 0, register: 0, wheel: 1, result: 2 };
-  const currentStep = stageIndex[stage as keyof typeof stageIndex];
-  const stepLabels = ['Details', 'Spin', 'Claim'];
-
   return (
     <Card className="bg-zinc-950/80 backdrop-blur-xl border-white/10 shadow-2xl relative rounded-[2rem] overflow-hidden transform-gpu">
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent z-0" />
       <CardContent className="p-6 sm:p-8 md:p-10 relative z-10 border-0">
-
-        {/* ── Step indicator ──────────────────────Details─ */}
-        {currentStep < 3 && (
-          <div className="flex items-center justify-center gap-2 mb-8">
-            {stepLabels.slice(0, 3).map((label, i) => (
-              <div key={label} className="flex items-center gap-2">
-                <div className="flex flex-col items-center gap-1.5">
-                  <div
-                    className={`w-2 h-2 rounded-full transition-all duration-500 ${i <= currentStep
-                      ? 'bg-pink-500 shadow-[0_0_12px_rgba(236,72,153,0.8)]'
-                      : 'bg-white/10'
-                      }`}
-                  />
-                  <span className={`text-[9px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 ${i <= currentStep ? 'text-pink-500' : 'text-zinc-600'
-                    }`}>
-                    {label}
-                  </span>
-                </div>
-                {i < 2 && (
-                  <div className={`w-8 h-px mb-4 transition-all duration-500 ${i < currentStep ? 'bg-gradient-to-r from-pink-500 to-indigo-500' : 'bg-white/10'
-                    }`} />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* ── Error banner ───────────────────────── */}
         {error && (
@@ -285,16 +256,31 @@ Please let me know how to redeem it.`;
           <div className="animate-fade-up">
             <div className="text-center mb-8">
               <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight">
-                Discover Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Offer</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Discover</span> Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Offer</span>
               </h2>
               <p className="text-zinc-400 text-sm font-medium">
-                Enter your mobile number to begin
+                Enter your details to spin and claim
               </p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-5">
               <div>
-                <Label htmlFor="phone-input" className="block text-[10px] uppercase tracking-[0.2em] text-pink-500 mb-3 font-bold">
+                <Label htmlFor="name-input" className="block text-[15px] uppercase tracking-[0.2em] text-pink-500 mb-2.5 font-bold">
+                  Full Name
+                </Label>
+                <Input
+                  id="name-input"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-lg py-6 backdrop-blur-md rounded-xl transition-all duration-300 font-medium"
+                  placeholder="e.g. Jane Doe"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone-input" className="block text-[15px] uppercase tracking-[0.2em] text-pink-500 mb-2.5 font-bold">
                   Mobile Number
                 </Label>
                 <Input
@@ -308,21 +294,6 @@ Please let me know how to redeem it.`;
                 />
               </div>
 
-              <label className="flex items-start gap-3 cursor-pointer group py-1" htmlFor="consent-check">
-                <div className="pt-1 flex-shrink-0">
-                  <Checkbox
-                    id="consent-check"
-                    checked={consent}
-                    onCheckedChange={(checked) => setConsent(checked as boolean)}
-                    className="border-white/20 bg-white/5 data-[state=checked]:bg-pink-500 data-[state=checked]:text-white data-[state=checked]:border-pink-500"
-                    required
-                  />
-                </div>
-                <span className="text-[13px] text-zinc-400 group-hover:text-zinc-200 transition-colors font-medium leading-relaxed">
-                  I consent to being contacted regarding this offer and agree to the terms.
-                </span>
-              </label>
-
               <Button
                 type="submit"
                 disabled={isSubmitting}
@@ -331,11 +302,11 @@ Please let me know how to redeem it.`;
                 {isSubmitting ? (
                   <span className="inline-flex items-center justify-center gap-2.5">
                     <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span className="tracking-widest animate-pulse">Verifying Mobile...</span>
+                    <span className="tracking-widest animate-pulse">Verifying Details...</span>
                   </span>
                 ) : (
                   <span className="inline-flex items-center justify-center gap-2 group">
-                    <span>Continue</span>
+                    <span>Continue to Spin</span>
                     <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </span>
                 )}
@@ -369,7 +340,7 @@ Please let me know how to redeem it.`;
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-lg py-6 backdrop-blur-md rounded-xl transition-all duration-300 font-medium"
-                  placeholder="E.g., Jane Doe"
+                  placeholder="E.g., Rahul Roy"
                   required
                 />
               </div>
@@ -412,7 +383,7 @@ Please let me know how to redeem it.`;
           <div className="animate-scale-in flex flex-col items-center py-2 w-full">
             <div className="text-center mb-6">
               <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight">
-                Spin Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Luck</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Spin</span> Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Luck</span>
               </h2>
               <p className="text-zinc-400 text-sm font-medium">
                 Tap the center to reveal your offer
@@ -481,15 +452,22 @@ Please let me know how to redeem it.`;
 
               <div className="relative z-10">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-pink-400 mb-2 font-bold">
-                  Claim Code
+                  Exclusive Offer
                 </p>
-                <p className="text-3xl text-white tracking-[0.2em] mb-6 font-extrabold">
-                  {claim.claimCode}
-                </p>
-                <div className="inline-block px-4 py-2.5 bg-black/60 rounded-xl border border-white/10 text-sm text-indigo-300 font-bold w-full">
+                <h3 className="text-2xl sm:text-3xl text-white tracking-tight mb-5 font-black leading-tight drop-shadow-md">
                   {claim.offer?.name}
+                </h3>
+
+                <div className="inline-block px-5 py-3 bg-black/60 rounded-xl border border-white/10 w-full mb-2">
+                  <p className="text-[9px] uppercase tracking-[0.25em] text-zinc-400 font-bold mb-1">
+                    Claim Code
+                  </p>
+                  <p className="text-xl sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-400 tracking-[0.2em] font-extrabold font-mono">
+                    {claim.claimCode}
+                  </p>
                 </div>
-                <div className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-white/50 mt-6 pt-4 border-t border-white/10 font-medium">
+
+                <div className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-white/50 mt-5 pt-4 border-t border-white/10 font-medium">
                   <span>Issued to: <span className="text-white font-bold">{name}</span></span>
                   <span>Valid for {campaign.name}</span>
                 </div>

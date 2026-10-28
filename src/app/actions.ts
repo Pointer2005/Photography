@@ -7,20 +7,59 @@ import { normalizePhoneNumber, getPhoneLookupVariations } from '@/lib/phone';
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   phone: z.string().min(7, "Invalid phone number"),
-  consentGiven: z.boolean().refine(val => val === true, {
-    message: "You must consent to continue",
-  }),
   campaignId: z.string(),
 });
 
-export async function checkCustomerPhone(phone: string, consentGiven: boolean, campaignId: string) {
+export async function startCustomerFlow(name: string, phone: string, campaignId: string) {
+  const trimmedName = (name || '').trim();
+  if (trimmedName.length < 2) {
+    return { success: false, message: "Please enter your full name (at least 2 letters)." };
+  }
+
+  const { valid, normalized, error } = normalizePhoneNumber(phone);
+  if (!valid || !normalized) {
+    return { success: false, message: error || "Please enter a valid mobile number." };
+  }
+
+  try {
+    const variations = getPhoneLookupVariations(normalized);
+    let customer = await prisma.customer.findFirst({
+      where: { phone: { in: variations } }
+    });
+
+    if (!customer) {
+      customer = await prisma.customer.create({
+        data: { name: trimmedName, phone: normalized },
+      });
+    } else {
+      customer = await prisma.customer.update({
+        where: { id: customer.id },
+        data: { name: trimmedName, phone: normalized },
+      });
+    }
+
+    const claim = await prisma.claim.findUnique({
+      where: { customerId_campaignId: { customerId: customer.id, campaignId } },
+      include: { offer: true }
+    });
+
+    return {
+      success: true,
+      customerId: customer.id,
+      name: customer.name,
+      normalizedPhone: normalized,
+      claim: claim || null,
+    };
+  } catch (err) {
+    console.error("Error starting customer flow:", err);
+    return { success: false, message: "Could not process request. Please try again." };
+  }
+}
+
+export async function checkCustomerPhone(phone: string, campaignId: string) {
   const { valid, normalized, error } = normalizePhoneNumber(phone);
   if (!valid || !normalized) {
     return { success: false, message: error || "Invalid phone number format" };
-  }
-
-  if (!consentGiven) {
-    return { success: false, message: "You must consent to continue" };
   }
 
   const variations = getPhoneLookupVariations(normalized);
@@ -32,8 +71,6 @@ export async function checkCustomerPhone(phone: string, consentGiven: boolean, c
     await prisma.customer.update({
       where: { id: customer.id },
       data: {
-        consentGiven: true,
-        consentAt: new Date(),
         phone: normalized,
       }
     });
@@ -67,7 +104,6 @@ export async function registerCustomer(prevState: unknown, formData: FormData) {
     const rawData = {
       name: formData.get('name') as string,
       phone: normalized,
-      consentGiven: formData.get('consentGiven') === 'on',
       campaignId: formData.get('campaignId') as string,
     };
 
@@ -76,7 +112,7 @@ export async function registerCustomer(prevState: unknown, formData: FormData) {
       return { success: false, errors: validated.error.flatten().fieldErrors };
     }
 
-    const { name, phone, consentGiven } = validated.data;
+    const { name, phone } = validated.data;
     const variations = getPhoneLookupVariations(phone);
 
     let customer = await prisma.customer.findFirst({
@@ -84,12 +120,12 @@ export async function registerCustomer(prevState: unknown, formData: FormData) {
     });
     if (!customer) {
       customer = await prisma.customer.create({
-        data: { name, phone, consentGiven, consentAt: new Date() },
+        data: { name, phone },
       });
     } else {
       customer = await prisma.customer.update({
         where: { id: customer.id },
-        data: { name, phone, consentGiven, consentAt: new Date() },
+        data: { name, phone },
       });
     }
 

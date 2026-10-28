@@ -20,12 +20,9 @@ type SpinWheelProps = {
 };
 
 const SLICE_COLORS = [
-  { bg: '#18181b', text: '#F472B6' }, // Dark Zinc + Pink
-  { bg: '#DB2777', text: '#FFFFFF' }, // Rich Pink + White
-  { bg: '#27272a', text: '#FBBF24' }, // Zinc + Warm Gold
-  { bg: '#4F46E5', text: '#FFFFFF' }, // Indigo + White
-  { bg: '#F4F0E8', text: '#09090b' }, // Cream + Dark Charcoal
-  { bg: '#09090b', text: '#818CF8' }, // Charcoal + Indigo
+  { bg: '#FFFFFF', text: '#09090b' }, // White + Dark Charcoal
+  { bg: '#EC4899', text: '#FFFFFF' }, // Pink-500 + White
+  { bg: '#6366F1', text: '#FFFFFF' }, // Indigo-500 + White
 ];
 
 function splitTextIntoLines(text: string, maxLen = 14): string[] {
@@ -122,18 +119,19 @@ export default function SpinWheel({
       ctx.fillStyle = textColor;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold 20px Outfit, sans-serif';
 
       const offerName = offer?.name || `Offer ${i + 1}`;
       const lines = splitTextIntoLines(offerName, 13);
-      const textRadius = radius * 0.65;
+      const textRadius = radius * 0.63;
 
       if (lines.length === 1) {
+        ctx.font = '800 28px Outfit, sans-serif';
         ctx.fillText(lines[0], textRadius, 0);
       } else {
-        ctx.fillText(lines[0], textRadius, -11);
-        ctx.font = '600 17px Outfit, sans-serif';
-        ctx.fillText(lines[1], textRadius, 11);
+        ctx.font = '800 24px Outfit, sans-serif';
+        ctx.fillText(lines[0], textRadius, -13);
+        ctx.font = '700 21px Outfit, sans-serif';
+        ctx.fillText(lines[1], textRadius, 14);
       }
       ctx.restore();
     }
@@ -262,7 +260,7 @@ export default function SpinWheel({
   }, []);
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full max-w-[310px] sm:max-w-[330px] mx-auto select-none">
+    <div className="relative flex flex-col items-center justify-center w-full max-w-[340px] sm:max-w-[360px] mx-auto select-none">
       {/* Outer Container with Luxury Glow */}
       <div className="relative p-1.5 rounded-full bg-gradient-to-br from-[#DFC07A] via-[#C8A24E] to-[#7A5F25] shadow-[0_0_35px_rgba(200,162,78,0.22)] w-full aspect-square flex items-center justify-center">
         {/* Dark Bezel Inset */}

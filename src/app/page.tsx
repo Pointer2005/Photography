@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { connection } from 'next/server';
 import prisma from '@/lib/prisma';
 import MainFlow from '@/components/MainFlow';
@@ -32,20 +33,27 @@ export default async function Home() {
       <div className="relative w-full lg:w-1/2 h-[50vh] lg:h-screen shrink-0 border-b lg:border-b-0 lg:border-r border-white/5">
         <BackgroundCarousel />
         
-        {/* Branding text overlay on the images */}
-        <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 z-20">
-          <h1 className="animate-fade-up text-5xl md:text-6xl lg:text-[84px] font-black text-white tracking-tighter leading-[0.9] mb-3 md:mb-4 drop-shadow-2xl">
-            Capture <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">Every Vibe.</span>
-          </h1>
-          <p className="animate-fade-up delay-200 text-white/80 font-bold tracking-[0.2em] uppercase text-[10px] md:text-xs">
-            Weddings · Events · Portraits
+        {/* Branding overlay on the images */}
+        <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 z-20 flex flex-col items-start">
+          <h1 className="sr-only">the_Cinemoy - Shoot | Edit | Create</h1>
+          <div className="animate-fade-up relative w-28 h-28 sm:w-36 sm:h-36 md:w-48 md:h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64 rounded-full overflow-hidden drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)] filter">
+            <Image
+              src="/images/logo.png"
+              alt="the_Cinemoy - Professional Experience"
+              fill
+              sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, (max-width: 1024px) 192px, 256px"
+              className="object-contain rounded-full"
+              priority
+            />
+          </div>
+          <p className="animate-fade-up delay-200 text-white/80 font-bold tracking-[0.2em] uppercase text-[10px] md:text-xs mt-3 drop-shadow-md">
+            Weddings · Events · Commercial
           </p>
         </div>
       </div>
 
       {/* ── Right Half: Interactive Form ───────────────────────────────── */}
-      <div className="relative w-full lg:w-1/2 min-h-[55vh] lg:min-h-screen flex flex-col items-center justify-center p-6 md:p-12 lg:p-16 bg-[#09090b] z-10">
+      <div className="relative w-full lg:w-1/2 min-h-[30vh] lg:min-h-screen flex flex-col items-center justify-center p-2 md:p-12 lg:p-16 bg-[#09090b] z-10 ">
         
         {/* Vibrant ambient glows with GPU-accelerated radial gradients */}
         <div className="absolute top-[-10%] right-[-10%] w-[450px] h-[450px] bg-[radial-gradient(circle,rgba(236,72,153,0.16)_0%,transparent_70%)] rounded-full pointer-events-none transform-gpu"></div>
@@ -69,14 +77,14 @@ export default async function Home() {
             </Card>
           )}
 
+        </div>
+      </div>
           {/* ── Footer ────────────────────────────────── */}
-          <footer className="mt-12 text-center">
+          <footer className="mt-2 text-center">
             <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 font-bold">
               © {new Date().getFullYear()} the_cinemoy
             </p>
           </footer>
-        </div>
-      </div>
     </main>
   );
 }

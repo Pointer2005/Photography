@@ -19,8 +19,6 @@ model Customer {
   id           String    @id @default(cuid())
   name         String
   phone        String    @unique
-  consentGiven Boolean   @default(false)
-  consentAt    DateTime?
   claims       Claim[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
