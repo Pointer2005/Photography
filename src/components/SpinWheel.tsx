@@ -125,13 +125,13 @@ export default function SpinWheel({
       const textRadius = radius * 0.63;
 
       if (lines.length === 1) {
-        ctx.font = '800 28px Outfit, sans-serif';
+        ctx.font = '800 36px Outfit, sans-serif';
         ctx.fillText(lines[0], textRadius, 0);
       } else {
-        ctx.font = '800 24px Outfit, sans-serif';
-        ctx.fillText(lines[0], textRadius, -13);
-        ctx.font = '700 21px Outfit, sans-serif';
-        ctx.fillText(lines[1], textRadius, 14);
+        ctx.font = '800 31px Outfit, sans-serif';
+        ctx.fillText(lines[0], textRadius, -17);
+        ctx.font = '700 27px Outfit, sans-serif';
+        ctx.fillText(lines[1], textRadius, 18);
       }
       ctx.restore();
     }
