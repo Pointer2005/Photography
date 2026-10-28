@@ -3,8 +3,8 @@
 import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
-  Camera,
   LayoutDashboard,
   Gift,
   SlidersHorizontal,
@@ -94,8 +94,15 @@ export default function AdminNavbar({ hasSession }: AdminNavbarProps) {
             onClick={(e) => handleNavClick(e, '/admin')}
             className="group flex items-center gap-2.5 transition-opacity hover:opacity-95"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(236,72,153,0.35)] ring-1 ring-white/20 group-hover:scale-105 transition-transform duration-200">
-              <Camera className="w-4 h-4 text-white" />
+            <div className="relative w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-black/60 shadow-[0_0_15px_rgba(236,72,153,0.35)] group-hover:scale-105 transition-transform duration-200 shrink-0">
+              <Image
+                src="/images/logo.png"
+                alt="The Cinemoy"
+                fill
+                sizes="32px"
+                className="object-contain p-0.5 rounded-full"
+                priority
+              />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300 text-lg font-black tracking-tight">
