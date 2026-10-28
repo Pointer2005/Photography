@@ -107,7 +107,7 @@ export default function SpinWheel({
       ctx.fill();
 
       // Divider line
-      ctx.strokeStyle = 'rgba(200, 162, 78, 0.4)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
       ctx.lineWidth = 2;
       ctx.stroke();
 
@@ -139,11 +139,11 @@ export default function SpinWheel({
     // Outer Rim Border
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#DFC07A';
-    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 4;
     ctx.stroke();
 
-    // Outer decorative dots
+    // Outer decorative dots in alternating pink-500 and indigo-500
     const numDots = numSlices * 4;
     for (let d = 0; d < numDots; d++) {
       const dotAngle = (d * (2 * Math.PI)) / numDots;
@@ -152,16 +152,16 @@ export default function SpinWheel({
 
       ctx.beginPath();
       ctx.arc(dotX, dotY, 2.5, 0, 2 * Math.PI);
-      ctx.fillStyle = d % 2 === 0 ? '#FFE8A3' : '#7A5F25';
+      ctx.fillStyle = d % 2 === 0 ? '#EC4899' : '#6366F1';
       ctx.fill();
     }
 
     // Inner Cutout Border
     ctx.beginPath();
     ctx.arc(0, 0, innerRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = '#0C0B09';
+    ctx.fillStyle = '#09090B';
     ctx.fill();
-    ctx.strokeStyle = '#C8A24E';
+    ctx.strokeStyle = '#EC4899';
     ctx.lineWidth = 3;
     ctx.stroke();
 
@@ -260,11 +260,11 @@ export default function SpinWheel({
   }, []);
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full max-w-[340px] sm:max-w-[360px] mx-auto select-none">
-      {/* Outer Container with Luxury Glow */}
-      <div className="relative p-1.5 rounded-full bg-gradient-to-br from-[#DFC07A] via-[#C8A24E] to-[#7A5F25] shadow-[0_0_35px_rgba(200,162,78,0.22)] w-full aspect-square flex items-center justify-center">
+    <div className="relative flex flex-col items-center justify-center w-[min(68vw,260px)] sm:w-[300px] md:w-[330px] lg:w-[360px] aspect-square mx-auto select-none">
+      {/* Outer Container with Vibrant Glow */}
+      <div className="relative p-1 sm:p-1.5 rounded-full bg-gradient-to-br from-pink-500 via-white/30 to-indigo-500 shadow-[0_0_28px_rgba(236,72,153,0.3)] w-full h-full flex items-center justify-center">
         {/* Dark Bezel Inset */}
-        <div className="bg-[#0C0B09] rounded-full p-1.5 w-full h-full relative flex items-center justify-center overflow-hidden">
+        <div className="bg-[#09090b] rounded-full p-1 sm:p-1.5 w-full h-full relative flex items-center justify-center overflow-hidden">
           {/* Wheel Canvas */}
           <canvas
             ref={canvasRef}
@@ -279,16 +279,16 @@ export default function SpinWheel({
             onClick={handleSpinClick}
             disabled={isSpinning}
             aria-label="Spin the wheel"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[72px] h-[72px] sm:w-20 sm:h-20 bg-gradient-to-br from-[#DFC07A] via-[#C8A24E] to-[#9E7D3A] hover:from-[#E8CC8C] hover:via-[#D4AF55] hover:to-[#B0892F] text-[#0C0B09] font-serif font-black text-sm sm:text-base rounded-full transition-transform duration-200 hover:scale-[1.05] active:scale-[0.95] disabled:opacity-85 shadow-[0_0_24px_rgba(200,162,78,0.5)] flex items-center justify-center border-[3px] border-[#0C0B09] z-20 tracking-[0.15em] uppercase cursor-pointer"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white font-black text-xs sm:text-sm lg:text-base rounded-full transition-transform duration-200 hover:scale-[1.05] active:scale-[0.95] disabled:opacity-85 shadow-[0_0_20px_rgba(236,72,153,0.5)] flex items-center justify-center border-2 sm:border-[3px] border-[#09090b] z-20 tracking-[0.15em] uppercase cursor-pointer"
           >
-            <span className="drop-shadow-sm font-extrabold tracking-widest">
+            <span className="drop-shadow-sm font-extrabold tracking-wider">
               {isSpinning ? '...' : 'SPIN'}
             </span>
           </button>
         </div>
 
-        {/* Pointer (restored to top-right where it was before) */}
-        <div className="absolute top-2 right-1.5 w-[50px] sm:w-[54px] z-30 drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] pointer-events-none select-none">
+        {/* Pointer */}
+        <div className="absolute top-1 sm:top-2 right-1 sm:right-1.5 w-[38px] sm:w-[46px] lg:w-[52px] z-30 drop-shadow-[0_4px_10px_rgba(0,0,0,0.85)] pointer-events-none select-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/roulette-pointer.png"

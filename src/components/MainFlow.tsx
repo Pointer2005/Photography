@@ -200,12 +200,9 @@ Please let me know how to redeem it.`;
   };
 
   const wheelSlices = [
-    { bg: '#09090b', text: '#ec4899' },
-    { bg: '#ec4899', text: '#09090b' },
-    { bg: '#27272a', text: '#f4f4f5' },
-    { bg: '#6366f1', text: '#09090b' },
-    { bg: '#f4f4f5', text: '#ec4899' },
-    { bg: '#09090b', text: '#6366f1' },
+    { bg: '#ffffff', text: '#09090b' }, // White
+    { bg: '#ec4899', text: '#ffffff' }, // pink-500
+    { bg: '#6366f1', text: '#ffffff' }, // indigo-500
   ];
 
   const mappedOffers = campaign.offers.map((offer, index) => ({
@@ -237,14 +234,14 @@ Please let me know how to redeem it.`;
   };
 
   return (
-    <Card className="bg-zinc-950/80 backdrop-blur-xl border-white/10 shadow-2xl relative rounded-[2rem] overflow-hidden transform-gpu">
+    <Card className="bg-zinc-950/80 backdrop-blur-xl border-white/10 shadow-2xl relative rounded-2xl sm:rounded-[2rem] overflow-hidden transform-gpu">
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent z-0" />
-      <CardContent className="p-6 sm:p-8 md:p-10 relative z-10 border-0">
+      <CardContent className="p-4 sm:p-6 lg:p-8 relative z-10 border-0">
 
         {/* ── Error banner ───────────────────────── */}
         {error && (
-          <Alert variant="destructive" className="mb-6 bg-red-950/30 border-red-500/20 text-red-200/80 animate-fade-up flex items-center gap-3">
-            <AlertCircle className="h-4 w-4" />
+          <Alert variant="destructive" className="mb-3 sm:mb-4 py-2 px-3 bg-red-950/30 border-red-500/20 text-red-200/80 animate-fade-up flex items-center gap-2.5 text-xs sm:text-sm">
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -254,18 +251,18 @@ Please let me know how to redeem it.`;
          ══════════════════════════════════════════ */}
         {stage === 'login' && (
           <div className="animate-fade-up">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight">
+            <div className="text-center mb-3 sm:mb-5">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-1 tracking-tight">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Discover</span> Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Offer</span>
               </h2>
-              <p className="text-zinc-400 text-sm font-medium">
+              <p className="text-zinc-400 text-xs sm:text-sm font-medium">
                 Enter your details to spin and claim
               </p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
               <div>
-                <Label htmlFor="name-input" className="block text-[15px] uppercase tracking-[0.2em] text-pink-500 mb-2.5 font-bold">
+                <Label htmlFor="name-input" className="block text-[11px] sm:text-xs uppercase tracking-[0.16em] text-pink-500 mb-1 sm:mb-1.5 font-bold">
                   Full Name
                 </Label>
                 <Input
@@ -273,14 +270,14 @@ Please let me know how to redeem it.`;
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-lg py-6 backdrop-blur-md rounded-xl transition-all duration-300 font-medium"
+                  className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-sm sm:text-base py-2.5 sm:py-3 h-11 sm:h-12 backdrop-blur-md rounded-xl transition-all duration-300 font-medium"
                   placeholder="e.g. Jane Doe"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="phone-input" className="block text-[15px] uppercase tracking-[0.2em] text-pink-500 mb-2.5 font-bold">
+                <Label htmlFor="phone-input" className="block text-[11px] sm:text-xs uppercase tracking-[0.16em] text-pink-500 mb-1 sm:mb-1.5 font-bold">
                   Mobile Number
                 </Label>
                 <Input
@@ -288,7 +285,7 @@ Please let me know how to redeem it.`;
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-lg py-6 backdrop-blur-md rounded-xl transition-all duration-300 font-medium"
+                  className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-sm sm:text-base py-2.5 sm:py-3 h-11 sm:h-12 backdrop-blur-md rounded-xl transition-all duration-300 font-medium"
                   placeholder="e.g. 1234567890 or +91..."
                   required
                 />
@@ -297,12 +294,12 @@ Please let me know how to redeem it.`;
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-[12px] font-extrabold tracking-[0.15em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] active:translate-y-0 mt-4 border-0 disabled:opacity-80 disabled:cursor-wait"
+                className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-[11px] sm:text-xs font-extrabold tracking-[0.15em] uppercase py-3 sm:py-3.5 h-11 sm:h-12 rounded-xl transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] active:translate-y-0 mt-2 sm:mt-3 border-0 disabled:opacity-80 disabled:cursor-wait"
               >
                 {isSubmitting ? (
-                  <span className="inline-flex items-center justify-center gap-2.5">
+                  <span className="inline-flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span className="tracking-widest animate-pulse">Verifying Details...</span>
+                    <span className="tracking-widest animate-pulse">Verifying...</span>
                   </span>
                 ) : (
                   <span className="inline-flex items-center justify-center gap-2 group">
@@ -320,18 +317,18 @@ Please let me know how to redeem it.`;
          ══════════════════════════════════════════ */}
         {stage === 'register' && (
           <div className="animate-fade-up">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight">
+            <div className="text-center mb-3 sm:mb-5">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-1 tracking-tight">
                 Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Name</span>
               </h2>
-              <p className="text-zinc-400 text-sm font-medium">
+              <p className="text-zinc-400 text-xs sm:text-sm font-medium">
                 Tell us who you are
               </p>
             </div>
 
-            <form onSubmit={handleRegister} className="space-y-6">
+            <form onSubmit={handleRegister} className="space-y-3 sm:space-y-4">
               <div>
-                <Label htmlFor="name-input" className="block text-[10px] uppercase tracking-[0.2em] text-pink-500 mb-3 font-bold">
+                <Label htmlFor="name-input" className="block text-[11px] sm:text-xs uppercase tracking-[0.16em] text-pink-500 mb-1 font-bold">
                   Full Name
                 </Label>
                 <Input
@@ -339,22 +336,22 @@ Please let me know how to redeem it.`;
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-lg py-6 backdrop-blur-md rounded-xl transition-all duration-300 font-medium"
+                  className="bg-white/5 border-white/10 text-white focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-sm sm:text-base py-2.5 sm:py-3 h-11 sm:h-12 backdrop-blur-md rounded-xl transition-all duration-300 font-medium"
                   placeholder="E.g., Rahul Roy"
                   required
                 />
               </div>
 
-              <div className="space-y-3 mt-2">
+              <div className="space-y-2 mt-2">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-[12px] font-extrabold tracking-[0.15em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] active:translate-y-0 border-0 disabled:opacity-80 disabled:cursor-wait"
+                  className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-[11px] sm:text-xs font-extrabold tracking-[0.15em] uppercase py-3 sm:py-3.5 h-11 sm:h-12 rounded-xl transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] active:translate-y-0 border-0 disabled:opacity-80 disabled:cursor-wait"
                 >
                   {isSubmitting ? (
-                    <span className="inline-flex items-center justify-center gap-2.5">
+                    <span className="inline-flex items-center justify-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin text-white" />
-                      <span className="tracking-widest animate-pulse">Preparing Wheel...</span>
+                      <span className="tracking-widest animate-pulse">Preparing...</span>
                     </span>
                   ) : (
                     <span className="inline-flex items-center justify-center gap-2 group">
@@ -367,7 +364,7 @@ Please let me know how to redeem it.`;
                   type="button"
                   variant="ghost"
                   onClick={() => setStage('login')}
-                  className="w-full text-zinc-400 hover:text-pink-400 hover:bg-transparent text-[12px] uppercase tracking-[0.1em] font-bold"
+                  className="w-full text-zinc-400 hover:text-pink-400 hover:bg-transparent text-xs uppercase tracking-[0.1em] font-bold h-8 py-1"
                 >
                   ← Go Back
                 </Button>
@@ -380,13 +377,13 @@ Please let me know how to redeem it.`;
           STAGE: WHEEL
          ══════════════════════════════════════════ */}
         {stage === 'wheel' && (
-          <div className="animate-scale-in flex flex-col items-center py-2 w-full">
-            <div className="text-center mb-6">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight">
+          <div className="animate-scale-in flex flex-col items-center py-1 w-full">
+            <div className="text-center mb-2 sm:mb-3">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white mb-0.5 tracking-tight">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Spin</span> Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Luck</span>
               </h2>
-              <p className="text-zinc-400 text-sm font-medium">
-                Tap the center to reveal your offer
+              <p className="text-zinc-400 text-xs sm:text-sm font-medium">
+                Tap SPIN in the center to reveal your prize
               </p>
             </div>
             <div className="w-full flex items-center justify-center">
@@ -405,27 +402,27 @@ Please let me know how to redeem it.`;
           STAGE: RESULT
          ══════════════════════════════════════════ */}
         {stage === 'result' && claim && (
-          <div className="animate-scale-in text-center py-4">
+          <div className="animate-scale-in text-center py-1">
             {/* Confetti badge */}
-            <div className="mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/30">
-              <span className="text-base">✨</span>
+            <div className="mb-1.5 sm:mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30">
+              <span className="text-sm">✨</span>
               <span className="text-[10px] font-black tracking-[0.15em] uppercase text-pink-500">
                 Congratulations{name ? `, ${name.split(' ')[0]}` : ''}!
               </span>
             </div>
 
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-3 text-white leading-tight tracking-tight">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold mb-1 text-white leading-tight tracking-tight">
               {claim.offer?.name}
             </h2>
 
-            <p className="text-zinc-300 text-sm md:text-base mb-8 max-w-sm mx-auto font-medium leading-relaxed">
+            <p className="text-zinc-300 text-xs sm:text-sm mb-2 sm:mb-3 max-w-sm mx-auto font-medium leading-relaxed line-clamp-2">
               {claim.offer?.description}
             </p>
 
             {/* ── Claim Card ──────────────────────── */}
             <div
               ref={claimCardRef}
-              className="bg-white/5 backdrop-blur-xl border border-pink-500/20 p-8 rounded-[2rem] mb-8 relative overflow-hidden"
+              className="bg-white/5 backdrop-blur-xl border border-pink-500/20 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl mb-2.5 sm:mb-4 relative overflow-hidden text-left"
             >
               {/* Offer Background Image */}
               {claim.offer?.imageUrl && (
@@ -434,69 +431,66 @@ Please let me know how to redeem it.`;
                   <img
                     src={claim.offer.imageUrl as string}
                     alt="Offer Background"
-                    className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 pointer-events-none mix-blend-luminosity"
+                    className="absolute inset-0 w-full h-full object-cover z-0 opacity-35 pointer-events-none mix-blend-luminosity"
                   />
-                  {/* Soft gradient overlay to keep text readable without hiding the image */}
+                  {/* Soft gradient overlay */}
                   <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#09090b]/50 via-[#09090b]/70 to-[#09090b]/90 pointer-events-none" />
                 </>
               )}
 
               {/* Corner accents */}
-              <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-pink-500/50 rounded-tl-xl z-10"></div>
-              <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-indigo-500/50 rounded-tr-xl z-10"></div>
-              <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-indigo-500/50 rounded-bl-xl z-10"></div>
-              <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-pink-500/50 rounded-br-xl z-10"></div>
+              <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-pink-500/50 rounded-tl-lg z-10" />
+              <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-indigo-500/50 rounded-tr-lg z-10" />
+              <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-indigo-500/50 rounded-bl-lg z-10" />
+              <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-pink-500/50 rounded-br-lg z-10" />
 
-              {/* Subtle glow */}
-              <div className="absolute -top-16 -right-16 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl pointer-events-none z-10"></div>
-
-              <div className="relative z-10">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-pink-400 mb-2 font-bold">
-                  Exclusive Offer
+              <div className="relative z-10 text-center">
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-pink-400 mb-1 font-bold">
+                  Exclusive Reward
                 </p>
-                <h3 className="text-2xl sm:text-3xl text-white tracking-tight mb-5 font-black leading-tight drop-shadow-md">
+                <h3 className="text-base sm:text-xl text-white tracking-tight mb-2 sm:mb-3 font-black leading-tight drop-shadow-md">
                   {claim.offer?.name}
                 </h3>
 
-                <div className="inline-block px-5 py-3 bg-black/60 rounded-xl border border-white/10 w-full mb-2">
-                  <p className="text-[9px] uppercase tracking-[0.25em] text-zinc-400 font-bold mb-1">
+                <div className="inline-block px-3 py-1.5 sm:py-2 bg-black/60 rounded-xl border border-white/10 w-full mb-1.5">
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-400 font-bold mb-0.5">
                     Claim Code
                   </p>
-                  <p className="text-xl sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-400 tracking-[0.2em] font-extrabold font-mono">
+                  <p className="text-lg sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-400 tracking-[0.18em] font-extrabold font-mono">
                     {claim.claimCode}
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-white/50 mt-5 pt-4 border-t border-white/10 font-medium">
-                  <span>Issued to: <span className="text-white font-bold">{name}</span></span>
-                  <span>Valid for {campaign.name}</span>
+                <div className="flex items-center justify-between gap-1 text-[9px] sm:text-[10px] uppercase tracking-wider text-white/50 mt-2 pt-2 border-t border-white/10 font-medium">
+                  <span>For: <strong className="text-white">{name}</strong></span>
+                  <span>{campaign.name}</span>
                 </div>
               </div>
             </div>
 
             {/* ── Action Buttons ──────────────────── */}
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <Button
                 onClick={handleSaveCard}
                 variant="outline"
-                className="w-full py-6 bg-white/5 hover:bg-white/10 text-white font-bold tracking-wide rounded-xl transition-all duration-300 flex items-center justify-center gap-3 border border-white/10 hover:border-white/20 text-sm h-auto"
+                className="w-full h-10 sm:h-11 py-2 bg-white/5 hover:bg-white/10 text-white font-bold tracking-wide rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 border border-white/10 hover:border-white/20 text-xs sm:text-sm"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                Save Image Proof
+                <span>Save Proof</span>
               </Button>
 
               <Button
                 onClick={handleClaimWhatsApp}
-                className="w-full py-6 bg-[#25D366] hover:bg-[#20bd5a] text-white font-medium tracking-wide rounded-xl transition-all duration-300 shadow-[0_8px_24px_rgba(37,211,102,0.15)] hover:shadow-[0_8px_24px_rgba(37,211,102,0.3)] flex items-center justify-center gap-3 hover:-translate-y-0.5 text-sm h-auto"
+                className="w-full h-10 sm:h-11 py-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold tracking-wide rounded-xl transition-all duration-300 shadow-[0_6px_20px_rgba(37,211,102,0.2)] flex items-center justify-center gap-1.5 text-xs sm:text-sm"
               >
-                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                 </svg>
-                Claim on WhatsApp
+                <span>Claim WhatsApp</span>
               </Button>
             </div>
           </div>
