@@ -457,10 +457,10 @@ Please let me know how to redeem it.`;
                 </h3>
 
                 <div className="inline-block px-3 py-1.5 bg-black/60 rounded-xl border border-white/10 w-full mb-2">
-                  <p className="text-[11px] uppercase tracking-wider text-zinc-400 font-bold mb-0.5">
+                  <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-0.5">
                     Claim Code
                   </p>
-                  <p className="text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-400 tracking-[0.14em] font-bold font-mono">
+                  <p className="text-sm sm:text-base text-transparent bg-clip-text bg-linear-to-r from-pink-400 to-indigo-400 tracking-wider font-bold font-mono">
                     {claim.claimCode}
                   </p>
                 </div>
