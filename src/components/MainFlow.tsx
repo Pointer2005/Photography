@@ -46,8 +46,8 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
   useEffect(() => {
     import('./SpinWheel');
     console.log(
-      '%c Error makers ',
-      'background: linear-gradient(90deg, #ec4899, #6366f1); color: #ffffff; font-weight: bold; font-size: 12px; padding: 4px 8px; border-radius: 4px;'
+      '%c Made by Error Makers ',
+      'background: linear-gradient(90deg, #ec4899, #05062fff); color: #ffffff; font-weight: bold; font-size: 12px; padding: 4px 8px; border-radius: 4px;'
     );
   }, []);
 
