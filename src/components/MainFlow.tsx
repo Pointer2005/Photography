@@ -271,7 +271,7 @@ Please let me know how to redeem it.`;
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="bg-white/5 border-white/15 text-white placeholder:text-zinc-500 focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-base h-12 px-4 backdrop-blur-md rounded-xl transition-all font-medium"
-                  placeholder="e.g. Jane Doe"
+                  placeholder="e.g. Rahul Roy"
                   required
                 />
               </div>
@@ -452,11 +452,11 @@ Please let me know how to redeem it.`;
                   {claim.offer?.name}
                 </h3>
 
-                <div className="inline-block px-4 py-2 bg-black/60 rounded-xl border border-white/10 w-full mb-2">
-                  <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-0.5">
+                <div className="inline-block px-3 py-1.5 bg-black/60 rounded-xl border border-white/10 w-full mb-2">
+                  <p className="text-[11px] uppercase tracking-wider text-zinc-400 font-bold mb-0.5">
                     Claim Code
                   </p>
-                  <p className="text-2xl sm:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-400 tracking-[0.18em] font-extrabold font-mono">
+                  <p className="text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-400 tracking-[0.14em] font-bold font-mono">
                     {claim.claimCode}
                   </p>
                 </div>
