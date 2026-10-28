@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { addOverride, deleteOverride } from './actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,8 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-
-const prisma = new PrismaClient();
 
 export const instant = false;
 
@@ -26,9 +24,9 @@ export default async function OverridesAdmin() {
   if (!campaign) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-serif text-[#C8A24E]">Fixed Winners</h1>
-        <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md">
-          <CardContent className="p-8 text-center text-[#F5F0E8]/70">
+        <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Fixed Winners</h1>
+        <Card className="bg-zinc-900/55 border-pink-500/20 backdrop-blur-md">
+          <CardContent className="p-8 text-center text-zinc-100/70">
             No active campaign found. Please create one on the Offers page.
           </CardContent>
         </Card>
@@ -39,8 +37,8 @@ export default async function OverridesAdmin() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-serif text-[#C8A24E] mb-2">Fixed Winners (Overrides)</h1>
-        <p className="text-[#F5F0E8]/60 max-w-3xl leading-relaxed">
+        <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500 mb-2">Fixed Winners (Overrides)</h1>
+        <p className="text-zinc-100/60 max-w-3xl leading-relaxed">
           Assign specific winning offers to predetermined mobile numbers. When a customer registers with a matching number, they will bypass the random wheel probabilities and be guaranteed to win their assigned offer.
         </p>
       </div>
@@ -48,30 +46,33 @@ export default async function OverridesAdmin() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <div className="lg:col-span-5 xl:col-span-4">
-          <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md sticky top-24">
+          <Card className="bg-zinc-900/55 border-pink-500/20 backdrop-blur-md sticky top-24">
             <CardHeader>
-              <CardTitle className="text-xl font-serif text-[#C8A24E]">Add New Override</CardTitle>
+              <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Add New Override</CardTitle>
             </CardHeader>
             <CardContent>
               <form action={addOverride.bind(null, campaign.id) as unknown as (payload: FormData) => void} className="space-y-5">
                 <div className="space-y-2">
-                  <Label className="text-[#F5F0E8]/70">Mobile Number</Label>
+                  <Label className="text-zinc-100/70">Mobile Number</Label>
                   <Input
                     type="tel"
                     name="phone"
-                    placeholder="+91 9876543210"
+                    placeholder="e.g. 1234567890, 911234567890, +91..."
                     required
-                    className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]"
+                    className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500"
                   />
+                  <p className="text-[11px] text-zinc-100/40">
+                    Accepts 10-digit (1234567890), 91 prefix (911234567890), or with + (+911234567890).
+                  </p>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-[#F5F0E8]/70">Assign Offer</Label>
+                  <Label className="text-zinc-100/70">Assign Offer</Label>
                   <Select name="offerId" required>
-                    <SelectTrigger className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus:ring-[#C8A24E]/20">
+                    <SelectTrigger className="bg-white/5 border-zinc-100/15 text-zinc-100 focus:ring-pink-500/20">
                       <SelectValue placeholder="Select an offer" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#1E1B17] border-[#C8A24E]/20 text-[#F5F0E8]">
+                    <SelectContent className="bg-[#1E1B17] border-pink-500/20 text-zinc-100">
                       {campaign.offers.map((offer) => (
                         <SelectItem key={offer.id} value={offer.id}>
                           {offer.name}
@@ -83,7 +84,7 @@ export default async function OverridesAdmin() {
                 
                 <Button
                   type="submit"
-                  className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] font-bold mt-2"
+                  className="w-full bg-pink-500 hover:bg-pink-400 text-black font-bold mt-2"
                 >
                   Save Override
                 </Button>
@@ -93,20 +94,20 @@ export default async function OverridesAdmin() {
         </div>
         
         <div className="lg:col-span-7 xl:col-span-8">
-          <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md">
+          <Card className="bg-zinc-900/55 border-pink-500/20 backdrop-blur-md">
             <CardHeader>
-              <CardTitle className="text-xl font-serif text-[#C8A24E]">Configured Overrides</CardTitle>
-              <CardDescription className="text-[#F5F0E8]/50">List of all active and claimed phone number overrides.</CardDescription>
+              <CardTitle className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Configured Overrides</CardTitle>
+              <CardDescription className="text-zinc-100/50">List of all active and claimed phone number overrides.</CardDescription>
             </CardHeader>
             <CardContent>
               {campaign.overrides.length === 0 ? (
-                <div className="p-8 border border-dashed border-[#F5F0E8]/10 rounded-xl text-center text-[#F5F0E8]/50">
+                <div className="p-8 border border-dashed border-zinc-100/10 rounded-xl text-center text-zinc-100/50">
                   No overrides configured yet.
                 </div>
               ) : (
                 <div className="space-y-4">
                   {campaign.overrides.map((override) => (
-                    <Card key={override.id} className={`bg-black/40 ${override.isUsed ? 'border-red-500/20' : 'border-[#C8A24E]/30'} flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-colors`}>
+                    <Card key={override.id} className={`bg-black/40 ${override.isUsed ? 'border-red-500/20' : 'border-pink-500/30'} flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-colors`}>
                       <CardContent className="p-5 flex-1 flex flex-col sm:flex-row justify-between sm:items-center gap-4 w-full">
                         <div>
                           <div className="flex items-center gap-3 mb-1">
@@ -117,8 +118,8 @@ export default async function OverridesAdmin() {
                               <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20 font-bold uppercase tracking-wider text-[10px]">Waiting</Badge>
                             )}
                           </div>
-                          <p className="text-sm text-[#C8A24E] font-medium flex items-center gap-2">
-                            <span className="text-[#F5F0E8]/40">Assigned Offer:</span> {override.offer.name}
+                          <p className="text-sm text-pink-500 font-medium flex items-center gap-2">
+                            <span className="text-zinc-100/40">Assigned Offer:</span> {override.offer.name}
                           </p>
                         </div>
                         

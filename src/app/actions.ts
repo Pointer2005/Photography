@@ -1,34 +1,78 @@
 'use server';
 
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
+import { normalizePhoneNumber, getPhoneLookupVariations } from '@/lib/phone';
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number"),
-  consentGiven: z.boolean().refine(val => val === true, {
-    message: "You must consent to continue",
-  }),
+  phone: z.string().min(7, "Invalid phone number"),
   campaignId: z.string(),
 });
 
-export async function checkCustomerPhone(phone: string, consentGiven: boolean, campaignId: string) {
-  if (!/^\+?[1-9]\d{1,14}$/.test(phone)) {
-    return { success: false, message: "Invalid phone number format" };
+export async function startCustomerFlow(name: string, phone: string, campaignId: string) {
+  const trimmedName = (name || '').trim();
+  if (trimmedName.length < 2) {
+    return { success: false, message: "Please enter your full name (at least 2 letters)." };
   }
 
-  if (!consentGiven) {
-    return { success: false, message: "You must consent to continue" };
+  const { valid, normalized, error } = normalizePhoneNumber(phone);
+  if (!valid || !normalized) {
+    return { success: false, message: error || "Please enter a valid mobile number." };
   }
 
-  const customer = await prisma.customer.findUnique({ where: { phone } });
+  try {
+    const variations = getPhoneLookupVariations(normalized);
+    let customer = await prisma.customer.findFirst({
+      where: { phone: { in: variations } }
+    });
+
+    if (!customer) {
+      customer = await prisma.customer.create({
+        data: { name: trimmedName, phone: normalized },
+      });
+    } else {
+      customer = await prisma.customer.update({
+        where: { id: customer.id },
+        data: { name: trimmedName, phone: normalized },
+      });
+    }
+
+    const claim = await prisma.claim.findUnique({
+      where: { customerId_campaignId: { customerId: customer.id, campaignId } },
+      include: { offer: true }
+    });
+
+    return {
+      success: true,
+      customerId: customer.id,
+      name: customer.name,
+      normalizedPhone: normalized,
+      claim: claim || null,
+    };
+  } catch (err) {
+    console.error("Error starting customer flow:", err);
+    return { success: false, message: "Could not process request. Please try again." };
+  }
+}
+
+export async function checkCustomerPhone(phone: string, campaignId: string) {
+  const { valid, normalized, error } = normalizePhoneNumber(phone);
+  if (!valid || !normalized) {
+    return { success: false, message: error || "Invalid phone number format" };
+  }
+
+  const variations = getPhoneLookupVariations(normalized);
+  const customer = await prisma.customer.findFirst({
+    where: { phone: { in: variations } }
+  });
 
   if (customer) {
     await prisma.customer.update({
       where: { id: customer.id },
-      data: { consentGiven: true, consentAt: new Date() }
+      data: {
+        phone: normalized,
+      }
     });
 
     const claim = await prisma.claim.findUnique({
@@ -41,19 +85,25 @@ export async function checkCustomerPhone(phone: string, consentGiven: boolean, c
       isNewUser: false,
       customerId: customer.id,
       name: customer.name,
+      normalizedPhone: normalized,
       claim: claim || null
     };
   } else {
-    return { success: true, isNewUser: true };
+    return { success: true, isNewUser: true, normalizedPhone: normalized };
   }
 }
 
 export async function registerCustomer(prevState: unknown, formData: FormData) {
   try {
+    const rawPhone = formData.get('phone') as string;
+    const { valid, normalized, error } = normalizePhoneNumber(rawPhone);
+    if (!valid || !normalized) {
+      return { success: false, errors: { phone: [error || "Invalid phone number"] } };
+    }
+
     const rawData = {
       name: formData.get('name') as string,
-      phone: formData.get('phone') as string,
-      consentGiven: formData.get('consentGiven') === 'on',
+      phone: normalized,
       campaignId: formData.get('campaignId') as string,
     };
 
@@ -62,17 +112,20 @@ export async function registerCustomer(prevState: unknown, formData: FormData) {
       return { success: false, errors: validated.error.flatten().fieldErrors };
     }
 
-    const { name, phone, consentGiven } = validated.data;
+    const { name, phone } = validated.data;
+    const variations = getPhoneLookupVariations(phone);
 
-    let customer = await prisma.customer.findUnique({ where: { phone } });
+    let customer = await prisma.customer.findFirst({
+      where: { phone: { in: variations } }
+    });
     if (!customer) {
       customer = await prisma.customer.create({
-        data: { name, phone, consentGiven, consentAt: new Date() },
+        data: { name, phone },
       });
     } else {
       customer = await prisma.customer.update({
         where: { id: customer.id },
-        data: { name, consentGiven, consentAt: new Date() },
+        data: { name, phone },
       });
     }
 
@@ -86,10 +139,22 @@ export async function registerCustomer(prevState: unknown, formData: FormData) {
 
 
 export async function executeSpin(customerId: string, campaignId: string) {
+  const now = new Date();
+
   // Execute spin on the server
   const campaign = await prisma.campaign.findUnique({
     where: { id: campaignId },
-    include: { offers: { where: { isActive: true } } },
+    include: {
+      offers: {
+        where: {
+          isActive: true,
+          OR: [
+            { expiresAt: null },
+            { expiresAt: { gt: now } }
+          ]
+        }
+      }
+    },
   });
 
   if (!campaign || campaign.status !== 'ACTIVE') {
@@ -113,12 +178,17 @@ export async function executeSpin(customerId: string, campaignId: string) {
 
   // 1. Check for specific mobile number overrides
   if (customer) {
+    const variations = getPhoneLookupVariations(customer.phone);
     const override = await prisma.offerOverride.findFirst({
-      where: { phone: customer.phone, campaignId, isUsed: false },
+      where: {
+        phone: { in: variations },
+        campaignId,
+        isUsed: false
+      },
       include: { offer: true }
     });
 
-    if (override && override.offer.isActive) {
+    if (override && override.offer.isActive && (!override.offer.expiresAt || override.offer.expiresAt > now)) {
       winningOffer = override.offer;
 
       // Mark override as used
@@ -172,3 +242,20 @@ export async function executeSpin(customerId: string, campaignId: string) {
 
   return { success: true, claim };
 }
+
+export async function markWhatsAppClaimInitiated(claimCode: string) {
+  try {
+    await prisma.claim.update({
+      where: { claimCode },
+      data: {
+        whatsappInitiatedAt: new Date(),
+        claimStatus: 'INITIATED',
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to record WhatsApp initiation:', error);
+    return { success: false };
+  }
+}
+

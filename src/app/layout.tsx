@@ -1,20 +1,18 @@
 import type { Metadata } from "next";
-import {
-  Cinzel,
-  Lato, Geist
-} from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
-
-const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin"], display: "swap" });
-const lato = Lato({ variable: "--font-lato", subsets: ["latin"], weight: ["300", "400", "700"], display: "swap" });
+const outfit = Outfit({ 
+  subsets: ['latin'], 
+  variable: '--font-sans', 
+  weight: ['300', '400', '500', '600', '700', '800'] 
+});
 
 export const metadata: Metadata = {
-  title: "the_cinemoy — Exclusive Offer",
+  title: "The Cinemoy — Exclusive Photography Offer",
   description: "Register, spin, and discover a special offer for your next photography session. Weddings, pre-weddings, birthdays and more.",
 };
 
@@ -24,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased", cinzel.variable, lato.variable, "font-sans", geist.variable)}>
-      <body className="min-h-full flex flex-col font-sans bg-[#0C0B09] text-[#F5F0E8]">
+    <html lang="en" className={cn("h-full", "antialiased", outfit.variable)}>
+      <body className="min-h-full flex flex-col font-sans bg-[#09090b] text-zinc-100 overflow-x-hidden selection:bg-pink-500/30 selection:text-pink-200">
         <div className="noise-overlay" aria-hidden="true"></div>
         {children}
         <Analytics />

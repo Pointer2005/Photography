@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { DEFAULT_OFFERS_LIST as defaultOffers } from '../src/lib/defaultOffers'
 
 const prisma = new PrismaClient()
 
@@ -21,45 +22,43 @@ async function main() {
 
   console.log(`Admin user '${admin.username}' created or already exists.`)
 
-  // Create a default campaign if it doesn't exist
-  const existingCampaigns = await prisma.campaign.count()
-  if (existingCampaigns === 0) {
-    const campaign = await prisma.campaign.create({
+  // Ensure a campaign exists and has offers
+  let campaign = await prisma.campaign.findFirst({
+    where: { status: 'ACTIVE' },
+    include: { offers: true },
+  })
+
+  if (!campaign) {
+    campaign = await prisma.campaign.findFirst({
+      include: { offers: true },
+    })
+  }
+
+  if (!campaign) {
+    const created = await prisma.campaign.create({
       data: {
         name: 'Grand Opening Special',
         status: 'ACTIVE',
         selectionMode: 'WEIGHTED',
         offers: {
-          create: [
-            {
-              name: '10% OFF',
-              description: 'Get 10% off your next session',
-              offerType: 'DISCOUNT_PERCENT',
-              offerValue: '10',
-              weight: 50,
-              sequencePosition: 1
-            },
-            {
-              name: '₹500 OFF',
-              description: 'Flat ₹500 off on couples portrait',
-              offerType: 'DISCOUNT_AMOUNT',
-              offerValue: '500',
-              weight: 30,
-              sequencePosition: 2
-            },
-            {
-              name: 'Free Consultation',
-              description: '30-minute free photography consultation',
-              offerType: 'FREE_SERVICE',
-              offerValue: 'Consultation',
-              weight: 20,
-              sequencePosition: 3
-            },
-          ]
-        }
-      }
+          create: defaultOffers,
+        },
+      },
+      include: { offers: true },
     })
-    console.log(`Created default campaign '${campaign.name}'.`)
+    console.log(`Created default campaign '${created.name}' with ${created.offers.length} offers.`)
+  } else if (campaign.offers.length === 0) {
+    const campaignId = campaign.id
+    // Campaign exists but has 0 offers - seed them now!
+    await prisma.offer.createMany({
+      data: defaultOffers.map((offer) => ({
+        ...offer,
+        campaignId,
+      })),
+    })
+    console.log(`Added ${defaultOffers.length} default offers to existing campaign '${campaign.name}'.`)
+  } else {
+    console.log(`Campaign '${campaign.name}' already has ${campaign.offers.length} offers.`)
   }
 }
 

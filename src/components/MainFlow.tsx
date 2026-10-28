@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { registerCustomer, executeSpin } from '@/app/actions';
+import { useState, useRef, useEffect } from 'react';
+import { startCustomerFlow, registerCustomer, executeSpin, markWhatsAppClaimInitiated } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const SpinWheel = dynamic(() => import('./SpinWheel'), { ssr: false });
@@ -19,44 +18,96 @@ type Campaign = {
   offers: { id: string; name: string; imageUrl?: string | null;[key: string]: unknown }[];
 };
 
+type ClaimData = {
+  claimCode: string;
+  offerId: string;
+  offer?: {
+    name: string;
+    description: string | null;
+    imageUrl?: string | null;
+  };
+  [key: string]: unknown;
+};
+
 export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campaign; whatsappNumber: string }) {
   const [stage, setStage] = useState<'login' | 'register' | 'wheel' | 'result'>('login');
   const [customerId, setCustomerId] = useState<string | null>(null);
-  const [claim, setClaim] = useState<{ claimCode: string; offerId: string; offer?: { name: string; description: string | null; imageUrl?: string | null };[key: string]: unknown } | null>(null);
+  const [claim, setClaim] = useState<ClaimData | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const pendingSpinRef = useRef<Promise<{ success: boolean; claim?: unknown; message?: string }> | null>(null);
+
+  // Preload dynamic SpinWheel bundle early in background
+  useEffect(() => {
+    import('./SpinWheel');
+  }, []);
+
+  // Pre-calculate winning prize as soon as user reaches the wheel stage
+  // This allows the wheel to spin IMMEDIATELY on click without network lag
+  useEffect(() => {
+    if (stage === 'wheel' && customerId && !claim && !pendingSpinRef.current) {
+      pendingSpinRef.current = executeSpin(customerId, campaign.id)
+        .then((result) => {
+          if (result.success && result.claim) {
+            setClaim(result.claim as unknown as ClaimData);
+          }
+          return result;
+        })
+        .catch((err) => {
+          console.error("Spin preload error:", err);
+          return { success: false, message: "Network error" };
+        });
+    }
+  }, [stage, customerId, campaign.id, claim]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!phone || !consent) {
-      setError("Please provide your phone number and consent.");
+    const trimmedName = name.trim();
+    const trimmedPhone = phone.trim();
+
+    if (!trimmedName) {
+      setError("Please provide your name.");
       return;
     }
 
-    const { checkCustomerPhone } = await import('@/app/actions');
-    const result = await checkCustomerPhone(phone, consent, campaign.id);
+    if (!trimmedPhone) {
+      setError("Please provide your mobile number.");
+      return;
+    }
 
-    if (result.success) {
-      if (result.isNewUser) {
-        setStage('register');
-      } else {
-        setName(result.name || '');
+    setIsSubmitting(true);
+    try {
+      const result = await startCustomerFlow(trimmedName, trimmedPhone, campaign.id);
+
+      if (result.success) {
+        if (result.normalizedPhone) {
+          setPhone(result.normalizedPhone);
+        }
+        if (result.name) {
+          setName(result.name);
+        }
         setCustomerId(result.customerId!);
         if (result.claim) {
-          setClaim(result.claim);
+          setClaim(result.claim as unknown as ClaimData);
           setStage('result');
         } else {
           setStage('wheel');
         }
+      } else {
+        setError(result.message || "An error occurred");
       }
-    } else {
-      setError(result.message || "An error occurred");
+    } catch (err) {
+      console.error("Login verification error:", err);
+      setError("Connection error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -69,26 +120,49 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
       return;
     }
 
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('phone', phone);
-    formData.append('consentGiven', 'on'); // Already consented in login stage
-    formData.append('campaignId', campaign.id);
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('phone', phone);
+      formData.append('campaignId', campaign.id);
 
-    const result = await registerCustomer(null, formData);
-    if (!result.success) {
-      setError(result.message || "Registration failed. Check your inputs.");
-      return;
+      const result = await registerCustomer(null, formData);
+      if (!result.success) {
+        setError(result.message || "Registration failed. Check your inputs.");
+        return;
+      }
+
+      setCustomerId(result.customerId || null);
+      setStage('wheel');
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError("Registration error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setCustomerId(result.customerId || null);
-    setStage('wheel');
   };
 
   const handleSpinStart = async () => {
     if (!customerId) return;
     setIsSpinning(true);
 
+    // If pre-fetch already resolved, wheel will spin instantly on this frame
+    if (claim) {
+      return;
+    }
+
+    // If pre-fetch is in flight, await it
+    if (pendingSpinRef.current) {
+      const result = await pendingSpinRef.current;
+      if (!result?.success) {
+        setError(result?.message || "Spin failed");
+        setIsSpinning(false);
+      }
+      return;
+    }
+
+    // Fallback: execute directly
     const result = await executeSpin(customerId, campaign.id);
     if (!result.success) {
       setError(result.message || "Spin failed");
@@ -96,8 +170,7 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
       return;
     }
 
-    setClaim(result.claim || null);
-    // The SpinWheel component handles the delay/animation
+    setClaim(result.claim ? (result.claim as unknown as ClaimData) : null);
   };
 
   const handleSpinComplete = () => {
@@ -107,6 +180,8 @@ export default function MainFlow({ campaign, whatsappNumber }: { campaign: Campa
 
   const handleClaimWhatsApp = () => {
     if (!claim) return;
+
+    markWhatsAppClaimInitiated(claim.claimCode);
 
     const text = `Hello! I would like to claim my photography offer.
 
@@ -125,12 +200,9 @@ Please let me know how to redeem it.`;
   };
 
   const wheelSlices = [
-    { bg: '#161412', text: '#C8A24E' },
-    { bg: '#C8A24E', text: '#0C0B09' },
-    { bg: '#1E1B17', text: '#F5F0E8' },
-    { bg: '#B0892F', text: '#0C0B09' },
-    { bg: '#252219', text: '#C8A24E' },
-    { bg: '#9E7D3A', text: '#0C0B09' },
+    { bg: '#ffffff', text: '#09090b' }, // White
+    { bg: '#ec4899', text: '#ffffff' }, // pink-500
+    { bg: '#6366f1', text: '#ffffff' }, // indigo-500
   ];
 
   const mappedOffers = campaign.offers.map((offer, index) => ({
@@ -148,7 +220,7 @@ Please let me know how to redeem it.`;
       try {
         const htmlToImage = await import('html-to-image');
         const dataUrl = await htmlToImage.toPng(claimCardRef.current, {
-          backgroundColor: '#0C0B09',
+          backgroundColor: '#09090b',
           pixelRatio: 2,
         });
         const link = document.createElement('a');
@@ -161,46 +233,15 @@ Please let me know how to redeem it.`;
     }
   };
 
-  // Step indicator
-  const stageIndex = { login: 0, register: 0, wheel: 1, result: 2 };
-  const currentStep = stageIndex[stage as keyof typeof stageIndex];
-  const stepLabels = ['Details', 'Spin', 'Claim'];
-
   return (
-    <Card className="bg-[#161412]/55 backdrop-blur-3xl border-[#C8A24E]/15 shadow-2xl relative">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C8A24E]/25 to-transparent z-0" />
-      <CardContent className="p-8 md:p-10 relative z-10 border-0">
-
-        {/* ── Step indicator ──────────────────────Details─ */}
-        {currentStep < 3 && (
-          <div className="flex items-center justify-center gap-2 mb-8">
-            {stepLabels.slice(0, 3).map((label, i) => (
-              <div key={label} className="flex items-center gap-2">
-                <div className="flex flex-col items-center gap-1.5">
-                  <div
-                    className={`w-2 h-2 rounded-full transition-all duration-500 ${i <= currentStep
-                      ? 'bg-[#C8A24E] shadow-[0_0_8px_rgba(200,162,78,0.4)]'
-                      : 'bg-[#F5F0E8]/25'
-                      }`}
-                  />
-                  <span className={`text-[9px] uppercase tracking-[0.15em] transition-colors duration-300 ${i <= currentStep ? 'text-[#C8A24E]' : 'text-[#F5F0E8]/35'
-                    }`}>
-                    {label}
-                  </span>
-                </div>
-                {i < 2 && (
-                  <div className={`w-8 h-px mb-4 transition-all duration-500 ${i < currentStep ? 'bg-[#C8A24E]/50' : 'bg-[#F5F0E8]/15'
-                    }`} />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+    <Card className="bg-zinc-950/85 backdrop-blur-xl border-white/10 shadow-2xl relative rounded-2xl sm:rounded-[2rem] overflow-hidden transform-gpu">
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent z-0" />
+      <CardContent className="p-4 sm:p-6 relative z-10 border-0">
 
         {/* ── Error banner ───────────────────────── */}
         {error && (
-          <Alert variant="destructive" className="mb-6 bg-red-950/30 border-red-500/20 text-red-200/80 animate-fade-up flex items-center gap-3">
-            <AlertCircle className="h-4 w-4" />
+          <Alert variant="destructive" className="mb-3 py-2.5 px-3.5 bg-red-950/30 border-red-500/20 text-red-200/90 animate-fade-up flex items-center gap-2.5 text-sm">
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -210,18 +251,33 @@ Please let me know how to redeem it.`;
          ══════════════════════════════════════════ */}
         {stage === 'login' && (
           <div className="animate-fade-up">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-[28px] font-serif text-[#F5F0E8] mb-2 tracking-wide">
-                Discover Your <span className="text-[#C8A24E]">Offer</span>
+            <div className="text-center mb-4 sm:mb-5">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-1 tracking-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Discover</span> Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Offer</span>
               </h2>
-              <p className="text-[#F5F0E8]/65 text-sm font-light">
-                Enter your mobile number to begin
+              <p className="text-zinc-400 text-sm font-medium">
+                Enter your details to spin and claim
               </p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-3.5 sm:space-y-4">
               <div>
-                <Label htmlFor="phone-input" className="block text-[10px] uppercase tracking-[0.15em] text-[#C8A24E]/80 mb-3 font-medium">
+                <Label htmlFor="name-input" className="block text-xs uppercase tracking-wider text-pink-400 mb-1.5 font-bold">
+                  Full Name
+                </Label>
+                <Input
+                  id="name-input"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-white/5 border-white/15 text-white placeholder:text-zinc-500 focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-base h-12 px-4 backdrop-blur-md rounded-xl transition-all font-medium"
+                  placeholder="e.g. Jane Doe"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone-input" className="block text-xs uppercase tracking-wider text-pink-400 mb-1.5 font-bold">
                   Mobile Number
                 </Label>
                 <Input
@@ -229,29 +285,28 @@ Please let me know how to redeem it.`;
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E] focus-visible:ring-[#C8A24E]/20 text-lg py-6 backdrop-blur-sm"
-                  placeholder="+91 98765 43210"
+                  className="bg-white/5 border-white/15 text-white placeholder:text-zinc-500 focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-base h-12 px-4 backdrop-blur-md rounded-xl transition-all font-medium"
+                  placeholder="e.g. 9876543210"
                   required
                 />
               </div>
 
-              <label className="flex items-start gap-3 cursor-pointer group py-1" htmlFor="consent-check">
-                <div className="pt-1 flex-shrink-0">
-                  <Checkbox
-                    id="consent-check"
-                    checked={consent}
-                    onCheckedChange={(checked) => setConsent(checked as boolean)}
-                    className="border-[#F5F0E8]/25 bg-[#F5F0E8]/5 data-[state=checked]:bg-[#C8A24E] data-[state=checked]:text-[#0C0B09] data-[state=checked]:border-[#C8A24E]"
-                    required
-                  />
-                </div>
-                <span className="text-[13px] text-[#F5F0E8]/60 group-hover:text-[#F5F0E8]/80 transition-colors font-light leading-relaxed">
-                  I consent to being contacted regarding this offer and agree to the terms.
-                </span>
-              </label>
-
-              <Button type="submit" className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] text-[13px] font-bold tracking-[0.12em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_8px_24px_rgba(200,162,78,0.25)] mt-2">
-                Continue
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-sm font-bold tracking-wider uppercase h-12 rounded-xl transition-all duration-300 hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] active:translate-y-0 mt-2 border-0 disabled:opacity-80 disabled:cursor-wait cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span className="tracking-widest animate-pulse">Verifying...</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center justify-center gap-2 group">
+                    <span>Continue to Spin</span>
+                    <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                )}
               </Button>
             </form>
           </div>
@@ -262,18 +317,18 @@ Please let me know how to redeem it.`;
          ══════════════════════════════════════════ */}
         {stage === 'register' && (
           <div className="animate-fade-up">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-[28px] font-serif text-[#F5F0E8] mb-2 tracking-wide">
-                Your <span className="text-[#C8A24E]">Name</span>
+            <div className="text-center mb-4 sm:mb-5">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-1 tracking-tight">
+                Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Name</span>
               </h2>
-              <p className="text-[#F5F0E8]/40 text-sm font-light">
+              <p className="text-zinc-400 text-sm font-medium">
                 Tell us who you are
               </p>
             </div>
 
-            <form onSubmit={handleRegister} className="space-y-6">
+            <form onSubmit={handleRegister} className="space-y-3.5 sm:space-y-4">
               <div>
-                <Label htmlFor="name-input" className="block text-[10px] uppercase tracking-[0.15em] text-[#C8A24E]/80 mb-3 font-medium">
+                <Label htmlFor="name-input" className="block text-xs uppercase tracking-wider text-pink-400 mb-1.5 font-bold">
                   Full Name
                 </Label>
                 <Input
@@ -281,21 +336,35 @@ Please let me know how to redeem it.`;
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E] focus-visible:ring-[#C8A24E]/20 text-lg py-6 backdrop-blur-sm"
-                  placeholder="E.g., Jane Doe"
+                  className="bg-white/5 border-white/15 text-white placeholder:text-zinc-500 focus-visible:border-pink-500 focus-visible:ring-pink-500/20 text-base h-12 px-4 backdrop-blur-md rounded-xl transition-all font-medium"
+                  placeholder="E.g., Rahul Roy"
                   required
                 />
               </div>
 
-              <div className="space-y-3 mt-2">
-                <Button type="submit" className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] text-[13px] font-bold tracking-[0.12em] uppercase py-6 rounded-xl transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_8px_24px_rgba(200,162,78,0.25)]">
-                  Submit & Play
+              <div className="space-y-2.5 mt-2">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white text-sm font-bold tracking-wider uppercase h-12 rounded-xl transition-all duration-300 hover:shadow-[0_8px_32px_rgba(236,72,153,0.4)] active:translate-y-0 border-0 disabled:opacity-80 disabled:cursor-wait cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span className="tracking-widest animate-pulse">Preparing...</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center justify-center gap-2 group">
+                      <span>Submit & Play</span>
+                      <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  )}
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setStage('login')}
-                  className="w-full text-[#F5F0E8]/90 hover:text-[#C8A24E] hover:bg-transparent text-[12px] uppercase tracking-[0.1em]"
+                  className="w-full text-zinc-400 hover:text-pink-400 hover:bg-transparent text-xs uppercase tracking-wider font-bold h-9 py-1"
                 >
                   ← Go Back
                 </Button>
@@ -308,22 +377,24 @@ Please let me know how to redeem it.`;
           STAGE: WHEEL
          ══════════════════════════════════════════ */}
         {stage === 'wheel' && (
-          <div className="animate-scale-in flex flex-col items-center py-2">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-[28px] font-serif text-[#F5F0E8] mb-2 tracking-wide">
-                Spin Your <span className="text-[#C8A24E]">Luck</span>
+          <div className="animate-scale-in flex flex-col items-center w-full">
+            <div className="text-center mb-3">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-1 tracking-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Spin</span> Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Luck</span>
               </h2>
-              <p className="text-[#F5F0E8]/65 text-sm font-light">
-                Tap the center to reveal your offer
+              <p className="text-zinc-400 text-sm font-medium">
+                Tap SPIN in the center to reveal your prize
               </p>
             </div>
-            <SpinWheel
-              offers={mappedOffers}
-              winningOfferId={claim?.offerId || null}
-              onSpinStart={handleSpinStart}
-              onSpinComplete={handleSpinComplete}
-              isSpinning={isSpinning}
-            />
+            <div className="w-full flex items-center justify-center">
+              <SpinWheel
+                offers={mappedOffers}
+                winningOfferId={claim?.offerId || null}
+                onSpinStart={handleSpinStart}
+                onSpinComplete={handleSpinComplete}
+                isSpinning={isSpinning}
+              />
+            </div>
           </div>
         )}
 
@@ -331,27 +402,27 @@ Please let me know how to redeem it.`;
           STAGE: RESULT
          ══════════════════════════════════════════ */}
         {stage === 'result' && claim && (
-          <div className="animate-scale-in text-center py-4">
+          <div className="animate-scale-in text-center">
             {/* Confetti badge */}
-            <div className="mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#C8A24E]/15 border border-[#C8A24E]/30">
-              <span className="text-base">✨</span>
-              <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#C8A24E]">
+            <div className="mb-2 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-pink-500/10 border border-pink-500/30">
+              <span className="text-sm">✨</span>
+              <span className="text-xs font-bold tracking-wider uppercase text-pink-400">
                 Congratulations{name ? `, ${name.split(' ')[0]}` : ''}!
               </span>
             </div>
 
-            <h2 className="text-3xl md:text-4xl font-serif mb-3 text-[#F5F0E8] leading-tight tracking-wide">
+            <h2 className="text-2xl sm:text-3xl font-extrabold mb-1.5 text-white leading-tight tracking-tight">
               {claim.offer?.name}
             </h2>
 
-            <p className="text-[#F5F0E8]/70 text-sm md:text-base mb-8 max-w-sm mx-auto font-light leading-relaxed">
+            <p className="text-zinc-300 text-sm mb-3 max-w-sm mx-auto font-medium leading-relaxed">
               {claim.offer?.description}
             </p>
 
             {/* ── Claim Card ──────────────────────── */}
             <div
               ref={claimCardRef}
-              className="bg-[#161412]/80 backdrop-blur-xl border border-[#C8A24E]/20 p-8 rounded-2xl mb-8 relative overflow-hidden"
+              className="bg-white/5 backdrop-blur-xl border border-pink-500/20 p-4 sm:p-5 rounded-2xl mb-3.5 relative overflow-hidden text-center"
             >
               {/* Offer Background Image */}
               {claim.offer?.imageUrl && (
@@ -360,62 +431,66 @@ Please let me know how to redeem it.`;
                   <img
                     src={claim.offer.imageUrl as string}
                     alt="Offer Background"
-                    className="absolute inset-0 w-full h-full object-cover z-0 opacity-50 pointer-events-none"
+                    className="absolute inset-0 w-full h-full object-cover z-0 opacity-35 pointer-events-none mix-blend-luminosity"
                   />
-                  {/* Soft gradient overlay to keep text readable without hiding the image */}
-                  <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#161412]/30 via-[#161412]/50 to-[#161412]/90 pointer-events-none" />
+                  {/* Soft gradient overlay */}
+                  <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#09090b]/50 via-[#09090b]/70 to-[#09090b]/90 pointer-events-none" />
                 </>
               )}
 
               {/* Corner accents */}
-              <div className="absolute top-4 left-4 w-6 h-6 border-t border-l border-[#C8A24E]/35 rounded-tl-lg z-10"></div>
-              <div className="absolute top-4 right-4 w-6 h-6 border-t border-r border-[#C8A24E]/35 rounded-tr-lg z-10"></div>
-              <div className="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-[#C8A24E]/35 rounded-bl-lg z-10"></div>
-              <div className="absolute bottom-4 right-4 w-6 h-6 border-b border-r border-[#C8A24E]/35 rounded-br-lg z-10"></div>
-
-              {/* Subtle glow */}
-              <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#C8A24E]/15 rounded-full blur-3xl pointer-events-none z-10"></div>
+              <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-pink-500/50 rounded-tl-lg z-10" />
+              <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-indigo-500/50 rounded-tr-lg z-10" />
+              <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-indigo-500/50 rounded-bl-lg z-10" />
+              <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-pink-500/50 rounded-br-lg z-10" />
 
               <div className="relative z-10">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-[#C8A24E]/80 mb-2 font-medium">
-                  Claim Code
+                <p className="text-xs uppercase tracking-wider text-pink-400 mb-1 font-bold">
+                  Exclusive Reward
                 </p>
-                <p className="text-3xl text-[#F5F0E8] tracking-[0.15em] mb-6 font-light">
-                  {claim.claimCode}
-                </p>
-                <div className="inline-block px-4 py-2.5 bg-[#0C0B09]/60 rounded-lg border border-[#F5F0E8]/10 text-sm text-[#C8A24E] font-light w-full">
+                <h3 className="text-lg sm:text-xl text-white tracking-tight mb-2.5 font-black leading-tight drop-shadow-md">
                   {claim.offer?.name}
+                </h3>
+
+                <div className="inline-block px-4 py-2 bg-black/60 rounded-xl border border-white/10 w-full mb-2">
+                  <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-0.5">
+                    Claim Code
+                  </p>
+                  <p className="text-2xl sm:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-400 tracking-[0.18em] font-extrabold font-mono">
+                    {claim.claimCode}
+                  </p>
                 </div>
-                <div className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.15em] text-[#F5F0E8]/45 mt-6 pt-4 border-t border-[#F5F0E8]/10">
-                  <span>Issued to: <span className="text-[#F5F0E8]/80 font-medium">{name}</span></span>
-                  <span>Valid for {campaign.name}</span>
+
+                <div className="flex items-center justify-between gap-1 text-xs uppercase tracking-wider text-white/50 pt-2 border-t border-white/10 font-medium">
+                  <span>For: <strong className="text-white">{name}</strong></span>
+                  <span>{campaign.name}</span>
                 </div>
               </div>
             </div>
 
             {/* ── Action Buttons ──────────────────── */}
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 onClick={handleSaveCard}
                 variant="outline"
-                className="w-full py-6 bg-[#F5F0E8]/8 hover:bg-[#F5F0E8]/12 text-[#F5F0E8]/80 font-light tracking-wide rounded-xl transition-all duration-300 flex items-center justify-center gap-3 border border-[#F5F0E8]/12 hover:border-[#F5F0E8]/25 text-sm h-auto"
+                className="w-full h-12 py-3 bg-white/5 hover:bg-white/10 text-white font-bold tracking-wide rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-white/15 hover:border-white/25 text-sm cursor-pointer"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                Save Image Proof
+                <span>Save Proof</span>
               </Button>
 
               <Button
                 onClick={handleClaimWhatsApp}
-                className="w-full py-6 bg-[#25D366] hover:bg-[#20bd5a] text-white font-medium tracking-wide rounded-xl transition-all duration-300 shadow-[0_8px_24px_rgba(37,211,102,0.15)] hover:shadow-[0_8px_24px_rgba(37,211,102,0.3)] flex items-center justify-center gap-3 hover:-translate-y-0.5 text-sm h-auto"
+                className="w-full h-12 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold tracking-wide rounded-xl transition-all duration-300 shadow-[0_6px_20px_rgba(37,211,102,0.2)] flex items-center justify-center gap-2 text-sm cursor-pointer"
               >
-                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                 </svg>
-                Claim on WhatsApp
+                <span>WhatsApp</span>
               </Button>
             </div>
           </div>

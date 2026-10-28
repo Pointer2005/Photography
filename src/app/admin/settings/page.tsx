@@ -21,40 +21,40 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-xl mx-auto space-y-6 mt-8">
-      <Card className="bg-[#161412]/55 border-[#C8A24E]/20 backdrop-blur-md">
+      <Card className="bg-zinc-900/55 border-pink-500/20 backdrop-blur-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-serif text-[#C8A24E]">Change Password</CardTitle>
-          <CardDescription className="text-[#F5F0E8]/50">Update your admin credentials.</CardDescription>
+          <CardTitle className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-indigo-500">Change Password</CardTitle>
+          <CardDescription className="text-zinc-100/50">Update your admin credentials.</CardDescription>
         </CardHeader>
         <CardContent>
           <form ref={formRef} action={formAction} className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-[#F5F0E8]/70">Current Password</Label>
+              <Label className="text-zinc-100/70">Current Password</Label>
               <Input 
                 type="password" 
                 name="currentPassword" 
-                className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]"
+                className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500"
                 required
               />
             </div>
             
             <div className="space-y-2">
-              <Label className="text-[#F5F0E8]/70">New Password</Label>
+              <Label className="text-zinc-100/70">New Password</Label>
               <Input 
                 type="password" 
                 name="newPassword" 
-                className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]"
+                className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500"
                 required
                 minLength={6}
               />
             </div>
             
             <div className="space-y-2">
-              <Label className="text-[#F5F0E8]/70">Confirm New Password</Label>
+              <Label className="text-zinc-100/70">Confirm New Password</Label>
               <Input 
                 type="password" 
                 name="confirmPassword" 
-                className="bg-white/5 border-[#F5F0E8]/15 text-[#F5F0E8] focus-visible:border-[#C8A24E]"
+                className="bg-white/5 border-zinc-100/15 text-zinc-100 focus-visible:border-pink-500"
                 required
                 minLength={6}
               />
@@ -77,7 +77,7 @@ export default function SettingsPage() {
             <Button 
               type="submit" 
               disabled={isPending}
-              className="w-full bg-[#C8A24E] hover:bg-[#DFC07A] text-[#0C0B09] font-bold mt-4"
+              className="w-full bg-pink-500 hover:bg-pink-400 text-black font-bold mt-4"
             >
               {isPending ? 'Updating...' : 'Change Password'}
             </Button>

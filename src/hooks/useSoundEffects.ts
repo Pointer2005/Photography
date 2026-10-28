@@ -21,21 +21,25 @@ export function useSoundEffects() {
     const ctx = audioCtxRef.current;
     if (!ctx) return;
 
-    const osc = ctx.createOscillator();
-    const gainNode = ctx.createGain();
+    try {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
 
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(850, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + 0.03);
 
-    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+      gainNode.gain.setValueAtTime(0.08, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
 
-    osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
 
-    osc.start();
-    osc.stop(ctx.currentTime + 0.05);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.03);
+    } catch {
+      // Audio context might be restricted before user gesture
+    }
   }, [init]);
 
   const playWin = useCallback(() => {
